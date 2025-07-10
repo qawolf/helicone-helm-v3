@@ -1,0 +1,612 @@
+{{- if .Values.monitoring.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helicone.name" . }}-logs-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  helicone-logs-dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "Comprehensive logs monitoring dashboard for Helicone services",
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "templating": {
+        "list": [
+          {
+            "name": "loki_datasource",
+            "type": "datasource",
+            "query": "loki",
+            "current": {
+              "value": "${loki_datasource}",
+              "text": "Loki"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Loki Datasource",
+            "multi": false,
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false
+          },
+          {
+            "name": "service_name",
+            "type": "query",
+            "datasource": "${loki_datasource}",
+            "query": "label_values(service_name)",
+            "current": {
+              "value": "All",
+              "text": "All"
+            },
+            "includeAll": true,
+            "allValue": ".*",
+            "multi": true,
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "label": "Service Name"
+          },
+          {
+            "name": "log_level",
+            "type": "query",
+            "datasource": "${loki_datasource}",
+            "query": "label_values(severity)",
+            "current": {
+              "value": "All",
+              "text": "All"
+            },
+            "includeAll": true,
+            "allValue": ".*",
+            "multi": true,
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "label": "Log Level"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Total log entries per minute",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 100
+                  },
+                  {
+                    "color": "red",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "expr": "sum(rate(({service_name=~\"$service_name\", severity=~\"$log_level\"} | json | __error__=\"\")[1m]))",
+              "legendFormat": "Log Rate",
+              "refId": "A"
+            }
+          ],
+          "title": "Log Rate (per minute)",
+          "type": "stat"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Error logs count in last hour",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 6,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "expr": "sum(count_over_time({service_name=~\"$service_name\", severity=\"ERROR\"}[1h]))",
+              "legendFormat": "Error Count",
+              "refId": "A"
+            }
+          ],
+          "title": "Error Count (1h)",
+          "type": "stat"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Warning logs count in last hour",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5
+                  },
+                  {
+                    "color": "orange",
+                    "value": 20
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "expr": "sum(count_over_time({service_name=~\"$service_name\", severity=~\"WARN.*\"}[1h]))",
+              "legendFormat": "Warning Count",
+              "refId": "A"
+            }
+          ],
+          "title": "Warning Count (1h)",
+          "type": "stat"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Number of active services generating logs",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  },
+                  {
+                    "color": "green",
+                    "value": 2
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 18,
+            "y": 0
+          },
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "expr": "count(count by (service_name) (rate({service_name=~\"$service_name\"}[5m])))",
+              "legendFormat": "Active Services",
+              "refId": "A"
+            }
+          ],
+          "title": "Active Services",
+          "type": "stat"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Live stream of all logs",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            }
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 8
+          },
+          "id": 5,
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "enableLogDetails": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {
+              "expr": "{service_name=~\"$service_name\", severity=~\"$log_level\"} |= \"\"",
+              "refId": "A"
+            }
+          ],
+          "title": "Live Logs Stream",
+          "type": "logs"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Log volume over time by service",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 22
+          },
+          "id": 6,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (service_name) (count_over_time({service_name=~\"$service_name\", severity=~\"$log_level\"}[2m]))",
+              "legendFormat": "{{`{{service_name}}`}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Log Volume by Service",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Log levels distribution over time",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 22
+          },
+          "id": 7,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (severity) (count_over_time({service_name=~\"$service_name\", severity=~\"$log_level\"}[2m]))",
+              "legendFormat": "{{`{{severity}}`}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Log Levels Over Time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Error logs only",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            }
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 0,
+            "y": 30
+          },
+          "id": 8,
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "enableLogDetails": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {
+              "expr": "{service_name=~\"$service_name\", severity=\"ERROR\"} |= \"\"",
+              "refId": "A"
+            }
+          ],
+          "title": "Error Logs Only",
+          "type": "logs"
+        },
+        {
+          "datasource": "${loki_datasource}",
+          "description": "Warning logs only",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            }
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 12,
+            "x": 12,
+            "y": 30
+          },
+          "id": 9,
+          "options": {
+            "showLabels": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "enableLogDetails": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {
+              "expr": "{service_name=~\"$service_name\", severity=~\"WARN.*\"} |= \"\"",
+              "refId": "A"
+            }
+          ],
+          "title": "Warning Logs Only",
+          "type": "logs"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 36,
+      "style": "dark",
+      "tags": ["helicone", "logs", "observability"],
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+      },
+      "timezone": "",
+      "title": "Helicone Logs Dashboard",
+      "uid": "helicone-logs-monitoring",
+      "version": 1,
+      "weekStart": ""
+    }
+{{- end }} 

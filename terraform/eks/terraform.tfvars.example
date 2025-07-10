@@ -1,0 +1,47 @@
+# Example Terraform variables file for EKS cluster
+# Copy this file to terraform.tfvars and update with your actual values
+
+# AWS Configuration
+region       = "us-west-2"
+cluster_name = "helicone"
+
+# Node Configuration
+node_instance_types = ["t3.large"]
+node_desired_size    = 2
+node_min_size        = 1
+node_max_size        = 3
+
+# Domain Configuration (for ACM certificates only)
+# Enable helicone-test.com domain ACM certificate (set to false to disable)
+enable_helicone_test_domain = true
+
+# Common tags
+tags = {
+  Environment = "production"
+  Project     = "helicone"
+  ManagedBy   = "terraform"
+}
+
+#################################################################################
+# AWS Auth ConfigMap Configuration
+#################################################################################
+
+# Enable aws-auth ConfigMap management
+manage_aws_auth = true
+
+# Additional roles to add to aws-auth (e.g., GitHub Actions role)
+# Example: This would typically be populated by referencing the github-secrets module output
+additional_aws_auth_roles = [
+  # {
+  #   rolearn  = "arn:aws:iam::123456789012:role/helicone-github-actions-secrets-sync"
+  #   username = "github-actions-secrets-sync"
+  #   groups   = ["system:masters"]
+  # }
+]
+
+# Additional users to add to aws-auth (if needed)
+additional_aws_auth_users = []
+
+# Load balancer lookup configuration
+# Set to true after the ingress-nginx controller is deployed to enable zone ID lookup
+enable_ingress_nginx_lb_lookup = false 

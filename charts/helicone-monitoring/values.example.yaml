@@ -1,0 +1,30 @@
+monitoring:
+  namespaceOverride: ""
+  grafana:
+    enabled: true
+
+# Override default Grafana values
+kube-prometheus-stack:
+  grafana:
+    adminPassword: "admin123"
+    persistence:
+      enabled: true
+      size: 10Gi
+    ingress:
+      enabled: true
+      ingressClassName: nginx  # Use the modern ingressClassName instead of annotation
+      annotations:
+        # kubernetes.io/ingress.class: nginx  # Deprecated, using ingressClassName instead
+        # cert-manager.io/cluster-issuer: letsencrypt-prod  # Uncomment for HTTPS
+      hosts:
+        - grafana.helicone.ai
+      paths:
+        - /
+      # tls:  # Uncomment for HTTPS
+      #   - secretName: grafana-tls
+      #     hosts:
+      #       - grafana.helicone.ai
+    # Alternative: LoadBalancer (uncomment to use instead of ingress)
+    # service:
+    #   type: LoadBalancer
+    #   port: 80 

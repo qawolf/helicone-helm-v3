@@ -1,0 +1,57 @@
+{{- if .Values.loki.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helicone.fullname" . }}-loki
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+    component: loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "helicone.selectorLabels" . | nindent 6 }}
+      component: loki
+  template:
+    metadata:
+      labels:
+        {{- include "helicone.selectorLabels" . | nindent 8 }}
+        component: loki
+    spec:
+      containers:
+      - name: loki
+        image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
+        imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
+        args:
+          - -config.file=/etc/loki/local-config.yaml
+        ports:
+        - name: http-metrics
+          containerPort: 3100
+          protocol: TCP
+        - name: grpc
+          containerPort: 9096
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 45
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 45
+        resources:
+          {{- toYaml .Values.loki.resources | nindent 10 }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/loki
+        - name: storage
+          mountPath: /loki
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "helicone.fullname" . }}-loki-config
+      - name: storage
+        emptyDir: {}
+{{- end }} 

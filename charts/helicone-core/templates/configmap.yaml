@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: helicone-config
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    {{- include "helicone.annotations" . | nindent 4 }}

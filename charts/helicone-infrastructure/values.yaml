@@ -1,0 +1,488 @@
+################################################################################
+#
+#                     HELICONE INFRASTRUCTURE
+#
+################################################################################
+
+# Global configuration
+global:
+  argocd:
+    namespace: "argocd"
+
+# Sealed Secrets Controller configuration
+sealedSecrets:
+  enabled: true
+  fullnameOverride: "sealed-secrets-controller"
+  namespace: "kube-system"
+  image:
+    tag: "v0.26.0"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Key rotation settings (30 days default)
+  keyRenewPeriod: "720h"
+
+# External Secrets Operator configuration
+external-secrets:
+  enabled: true # Set to true to enable AWS Secrets Manager integration
+
+  # Configuration for the external-secrets subchart
+  installCRDs: true
+  replicaCount: 1
+
+  # Service account configuration for the operator
+  serviceAccount:
+    # IAM role ARN for IRSA (required for AWS Secrets Manager access)
+    # Example: arn:aws:iam::123456789012:role/helicone-external-secrets-role
+    # IMPORTANT: Set this when enabling External Secrets
+    roleArn: ""
+    create: true
+    annotations: {}
+
+  # Resources for the external-secrets controller
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # Webhook configuration
+  webhook:
+    create: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+  # Cert controller configuration
+  certController:
+    create: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+# Legacy configuration for backward compatibility
+externalSecrets:
+  enabled: true
+
+# Cluster Autoscaler configuration
+clusterAutoscaler:
+  enabled: false # Disabled to avoid conflicts with existing installation
+  image:
+    tag: "v1.26.2" # Should match your Kubernetes version
+  clusterName: "helicone-cluster" # Replace with your actual cluster name
+  serviceAccount:
+    roleArn: "" # ARN of the IAM role for cluster autoscaler (must be set for production)
+  extraArgs:
+    - "--scale-down-delay-after-add=10m"
+    - "--scale-down-unneeded-time=10m"
+    - "--max-node-provision-time=15m"
+    - "--scan-interval=10s"
+
+# OpenTelemetry Collector configuration
+otelCollector:
+  enabled: true
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: "0.91.0"
+    pullPolicy: IfNotPresent
+
+  # Deployment mode: deployment, daemonset, or statefulset
+  mode: deployment
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      otlp:
+        enabled: true
+        containerPort: 4317
+        servicePort: 4317
+        protocol: TCP
+      otlp-http:
+        enabled: true
+        containerPort: 4318
+        servicePort: 4318
+        protocol: TCP
+      jaeger-grpc:
+        enabled: true
+        containerPort: 14250
+        servicePort: 14250
+        protocol: TCP
+      jaeger-thrift:
+        enabled: true
+        containerPort: 14268
+        servicePort: 14268
+        protocol: TCP
+      zipkin:
+        enabled: true
+        containerPort: 9411
+        servicePort: 9411
+        protocol: TCP
+      metrics:
+        enabled: true
+        containerPort: 8888
+        servicePort: 8888
+        protocol: TCP
+
+  # Ingress configuration for OTEL endpoints
+  ingress:
+    enabled: false
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m" # Increased for larger log payloads
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+      nginx.ingress.kubernetes.io/client-body-timeout: "300"
+      # Uncomment below for rate limiting if needed
+      # nginx.ingress.kubernetes.io/rate-limit: "100"
+      # nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    hosts:
+      - host: otel.helicone.ai
+        paths:
+          - path: /v1/logs
+            pathType: Prefix
+            port: 4318
+          - path: /v1/traces
+            pathType: Prefix
+            port: 4318
+          - path: /v1/metrics
+            pathType: Prefix
+            port: 4318
+    tls: []
+    # Uncomment and configure TLS for production:
+    # tls:
+    #   - secretName: otel-logs-tls
+    #     hosts:
+    #       - otel-logs.yourdomain.com
+
+  # Configuration for the OTEL Collector
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:14250
+          thrift_http:
+            endpoint: 0.0.0.0:14268
+      zipkin:
+        endpoint: 0.0.0.0:9411
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: "otel-collector"
+              scrape_interval: 10s
+              static_configs:
+                - targets: ["0.0.0.0:8888"]
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 1024
+      memory_limiter:
+        limit_mib: 512
+        check_interval: 1s
+      resource:
+        attributes:
+          - key: service.name
+            from_attribute: service.name
+            action: upsert
+          - key: service.namespace
+            from_attribute: service.namespace
+            action: upsert
+
+    exporters:
+      # OTLP exporter to Jaeger
+      otlp/jaeger:
+        endpoint: "jaeger-collector:4317"
+        tls:
+          insecure: true
+
+      # Prometheus exporter
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        const_labels:
+          label1: value1
+
+      # Logging exporter for debugging
+      logging:
+        loglevel: debug
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger, zipkin]
+          processors: [memory_limiter, resource, batch]
+          exporters: [otlp/jaeger, logging]
+        metrics:
+          receivers: [otlp, prometheus]
+          processors: [memory_limiter, resource, batch]
+          exporters: [prometheus, logging]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [logging]
+
+# Jaeger configuration
+jaeger:
+  enabled: true
+  image:
+    repository: jaegertracing/all-in-one
+    tag: "1.53"
+    pullPolicy: IfNotPresent
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      jaeger-grpc:
+        port: 14250
+        targetPort: 14250
+      jaeger-thrift:
+        port: 14268
+        targetPort: 14268
+      jaeger-ui:
+        port: 16686
+        targetPort: 16686
+      jaeger-metrics:
+        port: 14269
+        targetPort: 14269
+
+  # Environment variables
+  env:
+    COLLECTOR_OTLP_ENABLED: "true"
+    COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    MEMORY_MAX_TRACES: "50000"
+
+  # Ingress configuration for Jaeger UI
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: jaeger.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+
+# Loki configuration for log aggregation
+loki:
+  enabled: true
+  image:
+    repository: grafana/loki
+    tag: "2.9.0"
+    pullPolicy: IfNotPresent
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      http:
+        port: 3100
+        targetPort: 3100
+
+  # Loki configuration
+  config:
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9096
+    common:
+      path_prefix: /loki
+      storage:
+        filesystem:
+          chunks_directory: /loki/chunks
+          rules_directory: /loki/rules
+      replication_factor: 1
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+    query_scheduler:
+      max_outstanding_requests_per_tenant: 32768
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    ruler:
+      alertmanager_url: http://localhost:9093
+    limits_config:
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      allow_structured_metadata: false
+    analytics:
+      reporting_enabled: false
+
+# Beyla configuration for eBPF observability
+beyla:
+  enabled: true
+  image:
+    repository: grafana/beyla
+    tag: "v1.4.0"
+    pullPolicy: IfNotPresent
+
+  # Configuration for Beyla
+  config:
+    logLevel: info
+    services:
+      openPorts: "8080,3000,8000"
+      executableName: ""
+    routes:
+      unmatched: "heuristic"
+      patterns: []
+    tracing:
+      enabled: true
+      sampler:
+        name: "parentbased_traceidratio"
+        arg: "0.1"
+    metrics:
+      interval: "30s"
+      buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+  # Security context for Beyla
+  securityContext:
+    privileged: false
+    capabilities:
+      sysAdmin: false
+
+  # OpenTelemetry configuration
+  otel:
+    endpoint: "http://helicone-infrastructure-otel-collector:4317"
+    headers: ""
+    protocol: "grpc"
+
+  # Additional environment variables for Beyla
+  extraEnvVars: {}
+
+  # Resource limits for Beyla sidecar
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+# Service Account configuration
+serviceAccount:
+  name: "beyla"
+  annotations: {}
+
+# Monitoring configuration
+monitoring:
+  namespaceOverride: "monitoring"
+  serviceMonitor:
+    enabled: true # Now enabled since Prometheus Operator is installed
+    interval: 15s
+    scrapeTimeout: 10s
+
+# Nginx Ingress Controller configuration
+nginxIngressController:
+  enabled: true
+  namespace: helicone-infrastructure
+
+  # Watch all namespaces for ingress resources
+  watchIngressWithoutClass: true
+  watchNamespaces: "" # Empty string means watch all namespaces
+
+  # Controller configuration
+  controller:
+    image:
+      repository: registry.k8s.io/ingress-nginx/controller
+      tag: "v1.8.2"
+      pullPolicy: IfNotPresent
+
+    # Enable cross-namespace ingress support
+    extraArgs:
+      - "--watch-ingress-without-class=true"
+      - "--ingress-class=nginx"
+      - "--enable-ssl-passthrough"
+
+    # Resource configuration
+    resources:
+      requests:
+        cpu: 100m
+        memory: 90Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Service configuration
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb
+        service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      ports:
+        http: 80
+        https: 443
+
+    # Ingress class configuration
+    ingressClass:
+      name: nginx
+      enabled: true
+      default: true
+      controllerValue: "k8s.io/ingress-nginx"
+
+    # RBAC configuration for cross-namespace access
+    rbac:
+      create: true
+      scope: true # Cluster-wide scope for all namespaces
+
+    # Service account
+    serviceAccount:
+      create: true
+      name: nginx-ingress-controller

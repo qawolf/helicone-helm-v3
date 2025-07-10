@@ -1,0 +1,31 @@
+apiVersion: v2
+name: helicone-core
+description: Helicone Core Application - Web, Jawn, ClickHouse, MinIO, PostgreSQL
+type: application
+version: 0.1.0
+appVersion: "2025.05.23"
+icon: https://helicone.ai/static/logo.png
+
+dependencies:
+  - name: ai-gateway
+    version: "0.2.0"
+    repository: "oci://registry-1.docker.io/helicone"
+    condition: helicone.aiGateway.enabled
+  - name: cloudnative-pg
+    version: "1.0.2"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: helicone.cloudnativepg.enabled
+
+keywords:
+  - helicone
+  - llm
+  - monitoring
+  - observability
+
+maintainers:
+  - name: Helicone Team
+    email: engineering@helicone.ai
+
+home: https://helicone.ai
+sources:
+  - https://github.com/Helicone/helicone

@@ -1,0 +1,71 @@
+#################################################################################
+# General Configuration
+#################################################################################
+
+# AWS region (should match your other Terraform modules)
+aws_region = "us-west-2"
+
+resource_prefix = "helicone"
+secret_prefix   = "helicone"  # Must match external-secrets module
+
+tags = {
+  Project     = "Helicone"
+  Environment = "production"
+  ManagedBy   = "Terraform"
+  Owner       = "platform-team"
+}
+
+#################################################################################
+# GitHub Configuration
+#################################################################################
+
+# GitHub organization and repository
+github_org        = "Helicone"  # Replace with your GitHub org
+github_repository = "helicone-helm-v3"  # Replace with your repo name
+
+# Repository management (optional)
+manage_repository_settings = false  # Set to true to manage repo settings via Terraform
+repository_visibility      = "private"
+
+#################################################################################
+# EKS Configuration
+#################################################################################
+
+# EKS cluster information (should match your EKS module)
+eks_cluster_name      = "helicone-cluster"  # Replace with your cluster name
+kubernetes_namespace  = "helicone"
+
+# Kubeseal cluster access (optional - enables direct cluster access for kubeseal)
+enable_kubeseal_cluster_access = false
+
+#################################################################################
+# GitHub OIDC Provider Configuration
+#################################################################################
+
+# GitHub OIDC Provider
+create_github_oidc_provider = true  # Set to false if you already have one
+
+# If create_github_oidc_provider = false, provide the existing ARN:
+# existing_github_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+
+#################################################################################
+# Environment Variables Required
+#################################################################################
+
+# The following environment variables must be set when running Terraform:
+#
+# GITHUB_TOKEN - GitHub personal access token with repo and admin:org permissions
+#   Generate at: https://github.com/settings/tokens
+#   Required scopes:
+#   - repo (full control of private repositories)
+#   - admin:org (if managing organization settings)
+#   - workflow (if managing workflow settings)
+#
+# Example:
+# export GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#
+# AWS credentials should be configured via:
+# - AWS CLI: aws configure
+# - Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+# - IAM roles (recommended for CI/CD)
+# - AWS profiles: AWS_PROFILE=your-profile 

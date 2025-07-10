@@ -1,0 +1,425 @@
+################################################################################
+#
+#                            HELICONE CORE
+#
+################################################################################
+
+helicone:
+  web:
+    enabled: true
+    image:
+      repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/web
+      pullPolicy: IfNotPresent
+      tag: "v2025-06-17"
+    replicaCount: 1
+    service:
+      annotations: {}
+      type: ClusterIP
+      port: 3000
+    extraEnvVars: []
+    ingress:
+      enabled: true
+      className: "nginx"
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - host: filevine.helicone.ai
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - filevine.helicone.ai
+          secretName: heliconetest-tls
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    verticalPodAutoscaler:
+      enabled: false
+      updateMode: "Off"
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 1000m
+        memory: 2Gi
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+      maxUnavailable: null
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+      targetMemoryUtilizationPercentage: 80
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          percentPolicy: 50
+          periodSeconds: 60
+        scaleUp:
+          stabilizationWindowSeconds: 60
+          percentPolicy: 100
+          periodSeconds: 15
+    migrationRunner:
+      image:
+        repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/migrations
+        pullPolicy: IfNotPresent
+        tag: "v2025-06-17"
+      resources: {}
+
+    # Cloud SQL Auth Proxy configuration
+    # Enable this to use Cloud SQL Auth Proxy as a sidecar container
+    cloudSqlProxy:
+      enabled: false
+      image:
+        repository: gcr.io/cloudsql-docker/gce-proxy
+        tag: "1.33.2"
+        pullPolicy: IfNotPresent
+      # Cloud SQL connection name in format: project:region:instance
+      # Example: "my-project:us-central1:my-instance"
+      connectionName: ""
+      # Local port for the proxy (should match your database port)
+      port: 5432
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+      # Authentication method 1: Service Account Key (less secure)
+      # Service account secret name containing the JSON key
+      serviceAccountSecretName: "cloudsql-key"
+      serviceAccountSecretKey: "key.json"
+
+      # Authentication method 2: Workload Identity (recommended for GKE)
+      # Set to true to use Workload Identity instead of service account key
+      useWorkloadIdentity: false
+      # GCP service account email for Workload Identity
+      # Example: "my-service-account@my-project.iam.gserviceaccount.com"
+      workloadIdentityAnnotation: ""
+
+      # Additional command line arguments for the proxy
+      extraArgs: []
+
+      # Example configuration for key-based authentication:
+      # enabled: true
+      # connectionName: "my-project:us-central1:my-db-instance"
+      # port: 5432
+      # useWorkloadIdentity: false
+      # serviceAccountSecretName: "cloudsql-key"
+      # serviceAccountSecretKey: "key.json"
+
+      # Example configuration for Workload Identity:
+      # enabled: true
+      # connectionName: "my-project:us-central1:my-db-instance"
+      # port: 5432
+      # useWorkloadIdentity: true
+      # workloadIdentityAnnotation: "my-service-account@my-project.iam.gserviceaccount.com"
+
+    router:
+      enabled: true
+
+  aiGateway:
+    enabled: true
+    image:
+      repository: helicone/ai-gateway
+      pullPolicy: IfNotPresent
+      tag: "sha-765b2b1"
+    replicaCount: 1
+    service:
+      annotations: {}
+      type: ClusterIP
+      port: 8080
+    ingress:
+      enabled: false
+      className: "nginx"
+      annotations: {}
+      hosts:
+        - host: filevine.helicone.ai/ai-gateway
+          paths:
+            - path: /
+              pathType: Prefix
+      tls: []
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+    extraEnvVars:
+      - name: AI_GATEWAY__SERVER__ADDRESS
+        value: "0.0.0.0"
+      - name: OPENAI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: helicone-ai-gateway-secrets
+            key: openai_api_key
+      # Only required if deployment target == cloud
+      # - name: AI_GATEWAY__MINIO__ACCESS_KEY
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: helicone-minio-secrets
+      #       key: root_user
+      # - name: AI_GATEWAY__MINIO__SECRET_KEY
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: helicone-minio-secrets
+      #       key: root_password
+    config:
+      routers:
+        default:
+          load-balance:
+            chat:
+              strategy: latency
+              targets:
+                - openai
+                - anthropic
+
+  cloudnativepg:
+    enabled: true
+    cluster:
+      name: helicone-postgres
+      instances: 1
+      postgresql:
+        parameters:
+          max_connections: "200"
+          shared_buffers: "128MB"
+          effective_cache_size: "1GB"
+          maintenance_work_mem: "64MB"
+          checkpoint_completion_target: "0.9"
+          wal_buffers: "16MB"
+          default_statistics_target: "100"
+          random_page_cost: "1.1"
+          effective_io_concurrency: "200"
+      bootstrap:
+        initdb:
+          database: helicone_test
+          owner: helicone
+          secret:
+            name: helicone-app-credentials
+          # postInitSQL will be configured in the template to use the password from helicone.config.heliconePassword
+          # The password ALTER statement is automatically added by the template
+          postInitSQL:
+            - "ALTER USER helicone CREATEROLE;"
+            - "GRANT postgres TO helicone;"
+      storage:
+        size: 5Gi
+        storageClass: "gp2-immediate"
+      monitoring:
+        enabled: true
+      backup:
+        enabled: false
+        retentionPolicy: "30d"
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+
+  clickhouse:
+    enabled: true
+    image:
+      repository: clickhouse/clickhouse-server
+      pullPolicy: IfNotPresent
+      tag: "23.4.2.11"
+    replicaCount: 1
+    service:
+      annotations: {}
+      type: ClusterIP
+      port: 8123
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    persistence:
+      storageClass: "gp2-immediate"
+      size: 10Gi
+
+  # Note: If enabled is set to false, then S3 is used instead of MinIO
+  minio:
+    enabled: true
+    image:
+      repository: minio/minio
+      pullPolicy: IfNotPresent
+      tag: "RELEASE.2023-05-18T00-05-36Z"
+    replicaCount: 1
+    service:
+      annotations: {}
+      type: ClusterIP
+      port: 9000
+      consolePort: 9001
+    resources: {}
+    persistence:
+      storageClass: "gp2-immediate"
+      size: 20Gi
+    ingress:
+      enabled: false
+      ingressClassName: ""
+      annotations: {}
+    setup:
+      image:
+        repository: minio/mc
+        tag: "latest"
+        pullPolicy: IfNotPresent
+      buckets:
+        - "request-response-storage"
+
+  jawn:
+    enabled: true
+    image:
+      repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/jawn
+      pullPolicy: IfNotPresent
+      tag: "v2025-06-17"
+    replicaCount: 1
+    service:
+      annotations: {}
+      type: ClusterIP
+      port: 8585
+    extraEnvVars: []
+    publicUrl: "https://filevine.helicone.ai/jawn"
+    ingress:
+      enabled: true
+      className: "nginx"
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - host: filevine.helicone.ai
+          paths:
+            - path: /jawn(/|$)(.*)
+              pathType: ImplementationSpecific
+      tls:
+        - hosts:
+            - filevine.helicone.ai
+          secretName: heliconetest-tls
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+      targetMemoryUtilizationPercentage: 80
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          percentPolicy: 50
+          periodSeconds: 60
+        scaleUp:
+          stabilizationWindowSeconds: 60
+          percentPolicy: 100
+          periodSeconds: 15
+
+mailhog:
+  enabled: true
+  image:
+    repository: mailhog/mailhog
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  config:
+    vercelEnv: "development"
+    clickhouseHost: "https://ucewi94kth.us-west-2.aws.clickhouse.cloud" # TODO Not doing DRY between the two configs (above configuration as well)
+    clickhousePort: "8443"
+    clickhouseUser: "default"
+    s3BucketName: "helm-request-response-storage"
+    s3Endpoint: "http://helicone-core-minio:9000"
+    openaiProxyPort: "8787"
+    heliconeApiPort: "8788"
+    anthropicProxyPort: "8789"
+    gatewayApiPort: "8790"
+    jawnPort: "8585"
+    jawnPublicUrl: "https://filevine.helicone.ai/jawn"
+    kongHttpPort: "8000"
+    kongHttpsPort: "8443"
+    pgrstDbSchemas: "public,storage,graphql_public"
+    siteUrl: "https://filevine.helicone.ai"
+    betterAuthTrustedOrigins: "https://filevine.helicone.ai,http://filevine.helicone.ai"
+    additionalRedirectUrls: ""
+    jwtExpiry: "3600"
+    disableSignup: "false"
+    apiExternalUrl: "http://localhost:8000"
+    mailerUrlpathsConfirmation: "/auth/v1/verify"
+    mailerUrlpathsInvite: "/auth/v1/verify"
+    mailerUrlpathsRecovery: "/auth/v1/verify"
+    mailerUrlpathsEmailChange: "/auth/v1/verify"
+    enableEmailSignup: "true"
+    enableEmailAutoconfirm: "false"
+    enablePhoneSignup: "true"
+    enablePhoneAutoconfirm: "true"
+    studioDefaultOrganization: "Default Organization"
+    studioDefaultProject: "Default Project"
+    studioPort: "3000"
+    imgproxyEnableWebpDetection: "true"
+    functionsVerifyJwt: "false"
+    dockerSocketLocation: "/var/run/docker.sock"
+    googleProjectId: "GOOGLE_PROJECT_ID"
+    googleProjectNumber: "GOOGLE_PROJECT_NUMBER"
+    nodeEnv: "development"
+
+#################################################################################
+# External Secrets Configuration
+#################################################################################
+
+# External Secrets Operator configuration for AWS Secrets Manager integration
+# When enabled, secrets will be pulled from AWS Secrets Manager instead of using SealedSecrets
+externalSecrets:
+  # Set to true to enable External Secrets Operator integration
+  enabled: false
+
+  # Refresh interval for secret synchronization
+  refreshInterval: "30s"
+
+  # AWS Secrets Manager configuration
+  aws:
+    region: "us-west-2"
+
+  # Service account for AWS authentication
+  serviceAccount:
+    name: "external-secrets-sa"
+
+  # Prefix for secret keys in AWS Secrets Manager
+  secretPrefix: "helicone"
+#################################################################################
+# Sealed Secrets Configuration
+#################################################################################
+
+# Secrets are now managed via Bitnami Sealed Secrets for GitOps-friendly secret management.
+# When both externalSecrets.enabled and sealedSecrets.enabled are false, vanilla Kubernetes secrets will be used (secrets are defined here in the values.yaml or passed as secrets.yaml via the -f flag during install)
+#
+# To generate encrypted secrets:
+#   1. Install kubeseal CLI: https://github.com/bitnami-labs/sealed-secrets
+#   2. Run: ./scripts/generate-sealed-secrets.sh [environment] [namespace]
+#   3. Commit the encrypted secrets to Git (they are safe to store)
+#
+# The SealedSecret resources will automatically create the required Kubernetes Secrets
+# that the application components reference.
+sealedSecrets:
+  enabled: false

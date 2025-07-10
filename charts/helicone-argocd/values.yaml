@@ -1,0 +1,97 @@
+# Default values for helicone-argocd
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# ArgoCD configuration
+argocd:
+  # Enable ArgoCD resources
+  enabled: true
+
+  # Create ArgoCD project
+  createProject: true
+
+  # ArgoCD namespace
+  namespace: helicone-argocd
+
+  # Project name
+  project: helicone
+
+  # Source repository configuration
+  source:
+    repoURL: "https://github.com/Helicone/helicone-helm-v3.git"
+    targetRevision: main
+    path: charts/helicone-core
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters: []
+      # Example parameters:
+      # - name: image.tag
+      #   value: latest
+
+  # Destination configuration
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: helicone
+
+  # Sync policy configuration
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+      allowEmpty: false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Revision history limit
+  revisionHistoryLimit: 3
+
+# ArgoCD Helm chart dependency configuration
+# Set to false if ArgoCD already exists in the cluster
+argo-cd:
+  enabled: true
+  # Add any ArgoCD chart specific values here
+  # These will be passed to the ArgoCD Helm chart dependency
+
+  # Global configuration - override the default domain
+  global:
+    domain: argocd.helicone.ai
+
+  # Install CRDs (set to false if ArgoCD already exists in cluster)
+  crds:
+    install: false
+    keep: false
+
+  # Server configuration
+  server:
+    service:
+      type: ClusterIP
+      servicePortHttp: 80
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - argocd.helicone.ai
+      tls:
+        - secretName: argocd-tls
+          hosts:
+            - argocd.helicone.ai
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        nginx.ingress.kubernetes.io/server-snippet: |
+          grpc_read_timeout 300;
+          grpc_send_timeout 300;
+
+  # Disable Dex for simplicity (use built-in admin user)
+  dex:
+    enabled: false
+
+  # Configs
+  configs:
+    params:
+      server.insecure: true

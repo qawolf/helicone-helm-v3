@@ -1,0 +1,19 @@
+{{- if .Values.loki.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helicone.fullname" . }}-loki
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+    component: loki
+spec:
+  type: {{ .Values.loki.service.type }}
+  ports:
+  - port: {{ .Values.loki.service.ports.http.port }}
+    targetPort: {{ .Values.loki.service.ports.http.targetPort }}
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "helicone.selectorLabels" . | nindent 4 }}
+    component: loki
+{{- end }} 

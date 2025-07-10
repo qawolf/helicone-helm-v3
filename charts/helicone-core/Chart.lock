@@ -1,0 +1,9 @@
+dependencies:
+- name: ai-gateway
+  repository: oci://registry-1.docker.io/helicone
+  version: 0.2.0
+- name: cloudnative-pg
+  repository: https://charts.bitnami.com/bitnami
+  version: 1.0.2
+digest: sha256:bebde87fd93967110d704d1f376c63fb82a1cb248f89ad4abbf21154eca9489b
+generated: "2025-07-09T16:46:36.139289-07:00"

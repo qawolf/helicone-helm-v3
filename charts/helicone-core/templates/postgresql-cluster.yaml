@@ -1,0 +1,71 @@
+
+{{- if .Values.helicone.cloudnativepg.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.helicone.cloudnativepg.cluster.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  instances: {{ .Values.helicone.cloudnativepg.cluster.instances }}
+  
+  postgresql:
+    parameters:
+      {{- range $key, $value := .Values.helicone.cloudnativepg.cluster.postgresql.parameters }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+  
+  bootstrap:
+    initdb:
+      database: {{ .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
+      owner: {{ .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner }}
+      secret:
+        name: {{ .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.secret.name }}
+      {{- if .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.postInitSQL }}
+      postInitSQL:
+        - {{ printf "ALTER USER helicone PASSWORD '%s';" .Values.helicone.config.heliconePassword | quote }}
+        {{- range .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.postInitSQL }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- end }}
+  
+  storage:
+    size: {{ .Values.helicone.cloudnativepg.cluster.storage.size }}
+    {{- if .Values.helicone.cloudnativepg.cluster.storage.storageClass }}
+    storageClass: {{ .Values.helicone.cloudnativepg.cluster.storage.storageClass }}
+    {{- end }}
+  
+  {{- if .Values.helicone.cloudnativepg.cluster.monitoring.enabled }}
+  monitoring:
+    enablePodMonitor: {{ .Values.helicone.cloudnativepg.cluster.monitoring.enabled }}
+  {{- end }}
+  
+  {{- if .Values.helicone.cloudnativepg.cluster.backup.enabled }}
+  backup:
+    retentionPolicy: {{ .Values.helicone.cloudnativepg.cluster.backup.retentionPolicy }}
+    barmanObjectStore:
+      destinationPath: s3://your-backup-bucket/postgres-backups
+      s3Credentials:
+        accessKeyId:
+          name: backup-storage-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: backup-storage-creds
+          key: SECRET_ACCESS_KEY
+      wal:
+        retention: {{ .Values.helicone.cloudnativepg.cluster.backup.retentionPolicy }}
+      data:
+        retention: {{ .Values.helicone.cloudnativepg.cluster.backup.retentionPolicy }}
+  {{- end }}
+  
+  resources:
+    requests:
+      memory: {{ .Values.helicone.cloudnativepg.cluster.resources.requests.memory }}
+      cpu: {{ .Values.helicone.cloudnativepg.cluster.resources.requests.cpu }}
+    limits:
+      memory: {{ .Values.helicone.cloudnativepg.cluster.resources.limits.memory }}
+      cpu: {{ .Values.helicone.cloudnativepg.cluster.resources.limits.cpu }}
+{{- end }} 
