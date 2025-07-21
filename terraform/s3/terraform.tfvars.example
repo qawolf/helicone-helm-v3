@@ -1,1 +1,33 @@
-cors_allowed_origins = ["https://heliconetest.com", "https://filevine.helicone-test.com", "https://filevine.helicone.ai", "https://helicone.ai"]
+# Example Terraform variables for S3 bucket
+# Copy this file to terraform.tfvars and update with your actual values
+
+# S3 Configuration
+bucket_name = "helm-request-response-storage"
+region      = "us-west-2"
+environment = "production"
+enable_versioning = true
+
+# Service Account Access (IRSA) Configuration
+# Set to true to enable service account-based access instead of access keys
+enable_service_account_access = true
+
+# EKS OIDC provider URL (without https://)
+# Get this from: aws eks describe-cluster --name YOUR_CLUSTER_NAME --query "cluster.identity.oidc.issuer" --output text | sed 's|https://||'
+eks_oidc_provider = "oidc.eks.us-west-2.amazonaws.com/id/YOUR_CLUSTER_OIDC_ID"
+
+# Kubernetes namespace where helicone workloads run
+kubernetes_namespace = "helicone"
+
+# CORS Configuration
+cors_allowed_origins = ["https://heliconetest.com"]
+cors_allowed_methods = ["GET"]
+cors_allowed_headers = ["*"]
+cors_expose_headers = ["ETag"]
+cors_max_age_seconds = 3000
+
+# Tags
+tags = {
+  Environment = "production"
+  Project     = "helicone"
+  ManagedBy   = "terraform"
+}

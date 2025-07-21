@@ -179,11 +179,52 @@ Note: We also allow deploying the Cloudflare module as a DNS provider instead of
 
 ## Configuring S3 (Optional)
 
-### Terraform Setup
+### Terraform Setup with Service Account Access (Recommended)
 
-Go to terraform/s3, then `terraform validate` followed by `terraform apply`
+For secure S3 access using IAM roles for service accounts (IRSA):
 
-### Manual Setup
+1. Navigate to `terraform/s3` and configure your variables:
+
+   ```bash
+   cd terraform/s3
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+2. Edit `terraform.tfvars` and set:
+
+   ```hcl
+   enable_service_account_access = true
+   eks_oidc_provider = "oidc.eks.us-west-2.amazonaws.com/id/YOUR_CLUSTER_OIDC_ID"
+   kubernetes_namespace = "helicone"
+   ```
+
+3. Get your EKS OIDC provider URL:
+
+   ```bash
+   aws eks describe-cluster --name YOUR_CLUSTER_NAME --query "cluster.identity.oidc.issuer" --output text | sed 's|https://||'
+   ```
+
+4. Apply the Terraform configuration:
+
+   ```bash
+   terraform validate && terraform apply
+   ```
+
+5. Configure the Helm chart in `charts/helicone-core/values.yaml`:
+
+   ```yaml
+   helicone:
+     minio:
+       enabled: false # Disable MinIO when using real S3
+     s3:
+       serviceAccount:
+         enabled: true
+         roleArn: "arn:aws:iam::123456789012:role/helm-request-response-storage-service-account-role" # From terraform output
+       bucketName: "helm-request-response-storage"
+       endpoint: "https://s3.amazonaws.com"
+   ```
+
+### Alternative: Access Key Setup
 
 If minio is enabled, then it will take the place of S3. Minio is a storage solution similar to AWS
 S3, which can be used for local testing. If minio is disabled by setting the enabled flag under that
@@ -193,6 +234,8 @@ service to false, then the following parameters are used to configure the bucket
 - s3Endpoint
 - s3AccessKey (secret)
 - s3SecretKey (secret)
+
+### CORS Configuration
 
 Make sure to enable the following CORS policy on the S3 bucket, such that the web service can fetch
 URL's from the bucket. To do so in AWS, in the bucket settings, set the following under Permissions

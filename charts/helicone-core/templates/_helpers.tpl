@@ -142,6 +142,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 */}}
 # TODO This conditional logic will incur tech debt which needs to be refactored.
 {{- define "helicone.env.s3AccessKey" -}}
+{{- if not (and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled) }}
 - name: S3_ACCESS_KEY
 {{- if .Values.helicone.minio.enabled }}
   valueFrom:
@@ -155,8 +156,10 @@ ClickHouse host for Jawn application (URL format for Node.js client)
       key: {{ .Values.helicone.config.s3AccessKeyKey | default "access_key" | quote }}
 {{- end }}
 {{- end }}
+{{- end }}
 
 {{- define "helicone.env.s3SecretKey" -}}
+{{- if not (and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled) }}
 - name: S3_SECRET_KEY
 {{- if .Values.helicone.minio.enabled }}
   valueFrom:
@@ -170,11 +173,14 @@ ClickHouse host for Jawn application (URL format for Node.js client)
       key: {{ .Values.helicone.config.s3SecretKeyKey | default "secret_key" | quote }}
 {{- end }}
 {{- end }}
+{{- end }}
 
 {{- define "helicone.env.s3Endpoint" -}}
 - name: S3_ENDPOINT
 {{- if .Values.helicone.minio.enabled }}
   value: {{ .Values.helicone.config.s3Endpoint | default (printf "http://%s:%s" (include "minio.name" .) (.Values.helicone.minio.service.port | toString)) | quote }}
+{{- else if and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled }}
+  value: {{ .Values.helicone.s3.endpoint | default "https://s3.amazonaws.com" | quote }}
 {{- else }}
   valueFrom:
     secretKeyRef:
@@ -187,6 +193,8 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 - name: S3_BUCKET_NAME
 {{- if .Values.helicone.minio.enabled }}
   value: {{ .Values.helicone.config.s3BucketName | default (index .Values.helicone.minio.setup.buckets 0) | quote }}
+{{- else if and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled }}
+  value: {{ .Values.helicone.s3.bucketName | default "helm-request-response-storage" | quote }}
 {{- else }}
   valueFrom:
     secretKeyRef:

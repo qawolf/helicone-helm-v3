@@ -12,6 +12,7 @@ This Terraform configuration creates an S3 bucket named `helm-request-response-s
 - **Public Access**: Blocked (secure by default)
 - **CORS**: Configured to allow GET requests from `https://heliconetest.com`
 - **Tags**: Environment and purpose tags included
+- **Service Account Access**: Optional IAM roles for service accounts (IRSA) support
 
 ## Usage
 
@@ -57,11 +58,22 @@ terraform apply -var="bucket_name=my-custom-bucket" -var="environment=staging"
 
 ### Available Variables
 
+#### Basic Configuration
+
 - `bucket_name`: Name of the S3 bucket (default: "helm-request-response-storage")
 - `region`: AWS region (default: "us-west-2")
 - `environment`: Environment tag (default: "production")
 - `enable_versioning`: Enable bucket versioning (default: true)
 - `tags`: Additional tags as a map
+
+#### Service Account Access (IRSA)
+
+- `enable_service_account_access`: Enable IAM roles for service accounts (default: false)
+- `eks_oidc_provider`: EKS OIDC provider URL without https:// (required if IRSA enabled)
+- `kubernetes_namespace`: Kubernetes namespace for service accounts (default: "helicone")
+
+#### CORS Configuration
+
 - `cors_allowed_origins`: List of allowed origins for CORS (default: ["https://heliconetest.com"])
 - `cors_allowed_methods`: List of allowed HTTP methods for CORS (default: ["GET"])
 - `cors_allowed_headers`: List of allowed headers for CORS (default: ["*"])
@@ -77,6 +89,7 @@ After deployment, the following outputs will be available:
 - `bucket_domain_name`: The domain name of the bucket
 - `bucket_regional_domain_name`: The regional domain name
 - `bucket_region`: The region where the bucket is deployed
+- `s3_service_account_role_arn`: ARN of the IAM role for service account access (only when `enable_service_account_access` is true)
 
 ## Security
 
