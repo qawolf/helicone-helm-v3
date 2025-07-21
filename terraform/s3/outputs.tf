@@ -21,4 +21,9 @@ output "bucket_regional_domain_name" {
 output "bucket_region" {
   description = "Region where the S3 bucket is deployed"
   value       = aws_s3_bucket.helm_request_response_storage.region
+}
+
+output "s3_service_account_role_arn" {
+  description = "ARN of the IAM role for service account access to S3"
+  value       = var.enable_service_account_access ? aws_iam_role.s3_service_account[0].arn : null
 } 

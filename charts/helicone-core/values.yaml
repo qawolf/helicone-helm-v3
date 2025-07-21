@@ -384,6 +384,21 @@ mailhog:
     googleProjectNumber: "GOOGLE_PROJECT_NUMBER"
     nodeEnv: "development"
 
+  # S3 Service Account Configuration (IRSA)
+  # Enable this to use IAM roles for service accounts instead of access keys
+  s3:
+    serviceAccount:
+      # Set to true to enable service account-based S3 access
+      enabled: false
+      # IAM role ARN that the service accounts will assume
+      # This should be the output from the S3 terraform module
+      # Example: "arn:aws:iam::123456789012:role/helm-request-response-storage-service-account-role"
+      roleArn: ""
+    # S3 configuration when using service accounts
+    bucketName: "helm-request-response-storage"
+    # S3 endpoint (leave default for AWS S3)
+    endpoint: "https://s3.amazonaws.com"
+
 #################################################################################
 # External Secrets Configuration
 #################################################################################

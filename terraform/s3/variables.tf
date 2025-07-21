@@ -56,4 +56,23 @@ variable "cors_max_age_seconds" {
   description = "Maximum age in seconds for CORS preflight requests"
   type        = number
   default     = 3000
+}
+
+# Service Account Access Configuration
+variable "enable_service_account_access" {
+  description = "Enable IAM roles for service accounts (IRSA) for S3 access"
+  type        = bool
+  default     = false
+}
+
+variable "eks_oidc_provider" {
+  description = "EKS OIDC provider URL (without https://)"
+  type        = string
+  default     = ""
+}
+
+variable "kubernetes_namespace" {
+  description = "Kubernetes namespace where the service accounts will be created"
+  type        = string
+  default     = "helicone"
 } 
