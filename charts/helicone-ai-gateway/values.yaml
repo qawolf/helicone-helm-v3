@@ -101,7 +101,7 @@ helicone:
           load-balance:
             chat:
               strategy: latency
-              targets:
+              providers:
                 - openai
                 - anthropic
       providers:
