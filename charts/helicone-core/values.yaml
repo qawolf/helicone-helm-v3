@@ -8,7 +8,7 @@ helicone:
   web:
     enabled: true
     image:
-      repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/web
+      repository: helicone/web
       pullPolicy: IfNotPresent
       tag: "v2025-06-17"
     replicaCount: 1
@@ -281,7 +281,7 @@ helicone:
   jawn:
     enabled: true
     image:
-      repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/jawn
+      repository: helicone/jawn
       pullPolicy: IfNotPresent
       tag: "v2025-06-17"
     replicaCount: 1
