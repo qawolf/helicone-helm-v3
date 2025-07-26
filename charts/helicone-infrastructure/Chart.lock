@@ -1,9 +1,12 @@
 dependencies:
-- name: external-secrets
-  repository: https://charts.external-secrets.io
-  version: 0.9.19
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
   version: 27.28.1
-digest: sha256:42232f509a7511247fe6d3f393e7fa823e3a1e79f66b779be992124288117488
-generated: "2025-07-24T23:42:31.170925-07:00"
+- name: tempo
+  repository: https://grafana.github.io/helm-charts
+  version: 1.23.2
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.129.0
+digest: sha256:a37b29e3cf1e57cf9a69df0611dcb4eb3719378c948d16185b14e40ed29d0d59
+generated: "2025-07-25T20:09:02.608872-07:00"
