@@ -99,8 +99,8 @@ data "aws_iam_policy_document" "s3_service_account_trust" {
       test     = "StringEquals"
       variable = "${var.eks_oidc_provider}:sub"
       values   = [
-        "system:serviceaccount:${var.kubernetes_namespace}:helicone-web",
-        "system:serviceaccount:${var.kubernetes_namespace}:helicone-jawn"
+        "system:serviceaccount:${var.kubernetes_namespace}:helicone-core-web",
+        "system:serviceaccount:${var.kubernetes_namespace}:helicone-core-jawn"
       ]
     }
 
