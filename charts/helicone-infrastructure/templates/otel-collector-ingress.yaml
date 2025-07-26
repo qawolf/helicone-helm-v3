@@ -1,23 +1,24 @@
-{{- if and .Values.otelCollector.enabled .Values.otelCollector.ingress.enabled }}
+{{- if and .Values.otelCollector.enabled .Values.otelCollector.httpIngress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "helicone.name" . }}-otel-collector
+  name: {{ include "helicone.name" . }}-otel-collector-http
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
     component: otel-collector
-  {{- with .Values.otelCollector.ingress.annotations }}
+    protocol: http
+  {{- with .Values.otelCollector.httpIngress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.otelCollector.ingress.className }}
-  ingressClassName: {{ .Values.otelCollector.ingress.className }}
+  {{- if .Values.otelCollector.httpIngress.className }}
+  ingressClassName: {{ .Values.otelCollector.httpIngress.className }}
   {{- end }}
-  {{- if .Values.otelCollector.ingress.tls }}
+  {{- if .Values.otelCollector.httpIngress.tls }}
   tls:
-    {{- range .Values.otelCollector.ingress.tls }}
+    {{- range .Values.otelCollector.httpIngress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -26,7 +27,52 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.otelCollector.ingress.hosts }}
+    {{- range .Values.otelCollector.httpIngress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "helicone.name" $ }}-otel-collector
+                port:
+                  number: {{ .port }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+---
+{{- if and .Values.otelCollector.enabled .Values.otelCollector.grpcIngress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "helicone.name" . }}-otel-collector-grpc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "helicone.labels" . | nindent 4 }}
+    component: otel-collector
+    protocol: grpc
+  {{- with .Values.otelCollector.grpcIngress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.otelCollector.grpcIngress.className }}
+  ingressClassName: {{ .Values.otelCollector.grpcIngress.className }}
+  {{- end }}
+  {{- if .Values.otelCollector.grpcIngress.tls }}
+  tls:
+    {{- range .Values.otelCollector.grpcIngress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.otelCollector.grpcIngress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

@@ -147,8 +147,8 @@ otelCollector:
         servicePort: 8888
         protocol: TCP
 
-  # Ingress configuration for OTEL endpoints
-  ingress:
+  # Ingress configuration for OTEL HTTP endpoints (port 4318)
+  httpIngress:
     enabled: true
     className: "nginx"
     annotations:
@@ -175,9 +175,33 @@ otelCollector:
     tls: []
     # Uncomment and configure TLS for production:
     # tls:
-    #   - secretName: otel-logs-tls
+    #   - secretName: otel-http-tls
     #     hosts:
-    #       - otel-logs.yourdomain.com
+    #       - otel.helicone.ai
+
+  # Ingress configuration for OTEL gRPC endpoints (port 4317)
+  grpcIngress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+      nginx.ingress.kubernetes.io/grpc-backend: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+      nginx.ingress.kubernetes.io/client-body-timeout: "300"
+    hosts:
+      - host: otel-grpc.helicone.ai
+        paths:
+          - path: /
+            pathType: Prefix
+            port: 4317
+    tls: []
+    # Uncomment and configure TLS for production:
+    # tls:
+    #   - secretName: otel-grpc-tls
+    #     hosts:
+    #       - otel-grpc.helicone.ai
 
   # Configuration for the OTEL Collector
   config:
