@@ -1,0 +1,63 @@
+# Example Terraform variables for AWS Global Accelerator
+# Copy this file to terraform.tfvars and update with your actual values
+
+# Global Accelerator Configuration
+accelerator_name = "helicone-global-accelerator"
+region          = "us-west-2"
+environment     = "production"
+ip_address_type = "IPV4"
+enabled         = true
+
+# Listener Configuration
+client_affinity = "NONE"
+
+# Flow Logs Configuration (optional)
+flow_logs_enabled   = false
+flow_logs_s3_bucket = ""
+flow_logs_s3_prefix = "global-accelerator-logs/"
+
+# Endpoint Regions Configuration
+# Replace the ALB ARNs with your actual ALB ARNs
+endpoint_regions = {
+  "us-east-1" = {
+    alb_arns = [
+      "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/helicone-alb-east/1234567890abcdef"
+    ]
+    traffic_percentage = 100
+  }
+  "us-west-2" = {
+    alb_arns = [
+      "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/helicone-alb-west/1234567890abcdef"
+    ]
+    traffic_percentage = 100
+  }
+}
+
+# Health Check Configuration
+health_check_interval_seconds = 30
+health_check_path            = "/"
+health_check_protocol        = "HTTPS"
+health_check_port            = 443
+threshold_count              = 3
+
+# Endpoint Configuration
+endpoint_weight = 100
+
+# Port Overrides (optional)
+# Use this if you need to route traffic from listener port to different endpoint port
+port_overrides = []
+# Example:
+# port_overrides = [
+#   {
+#     listener_port = 443
+#     endpoint_port = 8443
+#   }
+# ]
+
+# Tags
+tags = {
+  Environment = "production"
+  Project     = "helicone"
+  ManagedBy   = "terraform"
+  Purpose     = "global-load-balancing"
+} 
