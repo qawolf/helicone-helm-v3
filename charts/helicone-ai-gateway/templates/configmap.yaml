@@ -8,5 +8,5 @@ metadata:
 data:
   config.yaml: |
     {{- .Values.helicone.aiGateway.config | toYaml | nindent 4 }}
+    {{- ai-gateway.env.minioAndRedisParams | toYaml | nindent 4 }}
 {{- end }}
-
