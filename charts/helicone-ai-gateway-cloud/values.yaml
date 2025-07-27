@@ -1,0 +1,113 @@
+aiGateway:
+  enabled: true
+  image:
+    repository: helicone/ai-gateway
+    pullPolicy: IfNotPresent
+    tag: "sha-90af8c4"
+  replicaCount: 2
+
+  # TODO: add canaries or blue-green
+  # Rolling Update Deployment Strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+
+  # Progress deadline for deployments (in seconds)
+  progressDeadlineSeconds: 90
+
+  service:
+    annotations: {}
+    type: NodePort
+    port: 8080
+  ingress:
+    enabled: true
+    className: "alb"
+    annotations:
+      # AWS Load Balancer Controller annotations for ALB
+      alb.ingress.kubernetes.io/load-balancer-name: "helicone-ai-gateway-alb"
+      alb.ingress.kubernetes.io/scheme: "internet-facing"
+      alb.ingress.kubernetes.io/target-type: "instance"
+      alb.ingress.kubernetes.io/healthcheck-path: "/health"
+      alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+      alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+      alb.ingress.kubernetes.io/healthy-threshold-count: "1"
+      alb.ingress.kubernetes.io/unhealthy-threshold-count: "5"
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    hosts:
+      - host: helicone.ai
+        paths:
+          - path: /ai-gateway
+            pathType: Prefix
+    tls: []
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+
+  # Health Probes Configuration
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /health
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /health
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 3
+    failureThreshold: 3
+    successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /health
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 20
+    successThreshold: 1
+
+  config:
+    telemetry:
+      level: "info,ai_gateway=trace"
+      format: "compact"
+      exporter: stdout
+
+    helicone:
+      features: all
+
+    minio:
+      bucket-name: "request-response-storage"
+      region: "us-west-2"
+      host: "https://s3.us-west-2.amazonaws.com"
+
+    cache-store:
+      type: redis
+      host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+
+    rate-limit-store:
+      type: redis
+      host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+
+    deployment-target:
+      type: cloud

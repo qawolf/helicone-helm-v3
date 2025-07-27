@@ -1,4 +1,4 @@
-{{- if and .Values.helicone.aiGateway.enabled .Values.helicone.aiGateway.config }}
+{{- if and .Values.aiGateway.enabled .Values.aiGateway.config }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,5 +7,5 @@ metadata:
     {{- include "helicone.labels" . | nindent 4 }}
 data:
   config.yaml: |
-    {{- .Values.helicone.aiGateway.config | toYaml | nindent 4 }}
+    {{- .Values.aiGateway.config | toYaml | nindent 4 }}
 {{- end }}

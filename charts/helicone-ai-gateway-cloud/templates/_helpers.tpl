@@ -55,7 +55,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
       name: ai-gateway-secrets
       key: db-url
 
-{{- with .Values.helicone.aiGateway.extraEnvVars }}
+{{- with .Values.aiGateway.extraEnvVars }}
 {{- toYaml . | nindent 0 }}
 {{- end }}
 {{- end }}

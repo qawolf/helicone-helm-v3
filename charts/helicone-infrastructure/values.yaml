@@ -58,7 +58,7 @@ beyla:
 
   # OpenTelemetry configuration
   otel:
-    endpoint: "http://otel-collector.otel.svc.cluster.local:4317"
+    endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317"
     headers: ""
     protocol: "grpc"
 
@@ -82,7 +82,7 @@ serviceAccount:
 # Nginx Ingress Controller configuration
 nginxIngressController:
   enabled: true
-  namespace: otel
+  namespace: helicone-infrastructure
   fullnameOverride: "nginx-controller"
 
   # Watch all namespaces for ingress resources
@@ -192,7 +192,7 @@ tempo:
   serviceMonitor:
     enabled: true
   retention: "7d"
-  
+
   # Enable distributed mode
   traces:
     otlp:
@@ -200,7 +200,7 @@ tempo:
         enabled: true
       http:
         enabled: true
-  
+
   # Configure the distributor to receive OTLP
   distributor:
     config:
@@ -215,7 +215,7 @@ tempo:
 # Loki configuration
 # Loki configuration for log aggregation
 loki:
-  enabled: true
+  enabled: false
   fullnameOverride: "loki"
   singleBinary:
     replicas: 1
@@ -327,15 +327,15 @@ opentelemetry-collector:
 
     exporters:
       otlp:
-        endpoint: tempo.otel.svc.cluster.local:4317
+        endpoint: tempo.helicone-infrastructure.svc.cluster.local:4317
         tls:
           insecure: true
-      otlphttp:
-        endpoint: http://loki.otel.svc.cluster.local:3100/otlp
-        tls:
-          insecure: true
+      # otlphttp:
+      #   endpoint: http://loki.helicone-infrastructure.svc.cluster.local:3100/otlp
+      #   tls:
+      #     insecure: true
       prometheusremotewrite:
-        endpoint: http://prometheus.otel.svc.cluster.local:80/api/v1/write
+        endpoint: http://prometheus.helicone-infrastructure.svc.cluster.local:80/api/v1/write
         tls:
           insecure: true
 
@@ -370,13 +370,13 @@ opentelemetry-collector:
             - batch
           exporters:
             - prometheusremotewrite
-        logs:
-          receivers:
-            - otlp
-          processors:
-            - batch
-          exporters:
-            - otlphttp
+        # logs:
+        #   receivers:
+        #     - otlp
+        #   processors:
+        #     - batch
+        #   exporters:
+        #     - otlphttp
 
   # Resource configuration
   resources:

@@ -1,18 +1,18 @@
-{{- if .Values.helicone.aiGateway.enabled }}
+{{- if .Values.aiGateway.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "helicone.ai-gateway.name" . }}
-  {{- with .Values.helicone.aiGateway.service.annotations }}
+  {{- with .Values.aiGateway.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.helicone.aiGateway.service.type }}
+  type: {{ .Values.aiGateway.service.type }}
   ports:
-    - port: {{ .Values.helicone.aiGateway.service.port }}
+    - port: {{ .Values.aiGateway.service.port }}
       targetPort: http
       protocol: TCP
       name: http

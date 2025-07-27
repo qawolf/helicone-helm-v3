@@ -1,23 +1,23 @@
-{{- if .Values.helicone.aiGateway.ingress.enabled -}}
+{{- if .Values.aiGateway.ingress.enabled -}}
 {{- $fullName := include "helicone.ai-gateway.name" . -}}
-{{- $svcPort := .Values.helicone.aiGateway.service.port -}}
+{{- $svcPort := .Values.aiGateway.service.port -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
-  {{- with .Values.helicone.aiGateway.ingress.annotations }}
+  {{- with .Values.aiGateway.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.helicone.aiGateway.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.helicone.aiGateway.ingress.className }}
+  {{- if and .Values.aiGateway.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.aiGateway.ingress.className }}
   {{- end }}
-  {{- if .Values.helicone.aiGateway.ingress.tls }}
+  {{- if .Values.aiGateway.ingress.tls }}
   tls:
-    {{- range .Values.helicone.aiGateway.ingress.tls }}
+    {{- range .Values.aiGateway.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -26,7 +26,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.helicone.aiGateway.ingress.hosts }}
+    {{- range .Values.aiGateway.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

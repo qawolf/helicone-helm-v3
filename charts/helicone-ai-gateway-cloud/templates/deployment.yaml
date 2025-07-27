@@ -1,4 +1,4 @@
-{{- if .Values.helicone.aiGateway.enabled }}
+{{- if .Values.aiGateway.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,18 +6,18 @@ metadata:
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.helicone.aiGateway.replicaCount }}
-  {{- if .Values.helicone.aiGateway.strategy }}
+  replicas: {{ .Values.aiGateway.replicaCount }}
+  {{- if .Values.aiGateway.strategy }}
   strategy:
-    type: {{ .Values.helicone.aiGateway.strategy.type }}
-    {{- if eq .Values.helicone.aiGateway.strategy.type "RollingUpdate" }}
+    type: {{ .Values.aiGateway.strategy.type }}
+    {{- if eq .Values.aiGateway.strategy.type "RollingUpdate" }}
     rollingUpdate:
-      maxUnavailable: {{ .Values.helicone.aiGateway.strategy.rollingUpdate.maxUnavailable }}
-      maxSurge: {{ .Values.helicone.aiGateway.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.aiGateway.strategy.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.aiGateway.strategy.rollingUpdate.maxSurge }}
     {{- end }}
   {{- end }}
-  {{- if .Values.helicone.aiGateway.progressDeadlineSeconds }}
-  progressDeadlineSeconds: {{ .Values.helicone.aiGateway.progressDeadlineSeconds }}
+  {{- if .Values.aiGateway.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ .Values.aiGateway.progressDeadlineSeconds }}
   {{- end }}
   selector:
     matchLabels:
@@ -29,68 +29,68 @@ spec:
     spec:
       containers:
         - name: helicone-ai-gateway
-          image: "{{ .Values.helicone.aiGateway.image.repository }}:{{ .Values.helicone.aiGateway.image.tag }}"
-          imagePullPolicy: {{ .Values.helicone.aiGateway.image.pullPolicy }}
+          image: "{{ .Values.aiGateway.image.repository }}:{{ .Values.aiGateway.image.tag }}"
+          imagePullPolicy: {{ .Values.aiGateway.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
-          {{- if .Values.helicone.aiGateway.config }}
+          {{- if .Values.aiGateway.config }}
           command: ["/usr/local/bin/ai-gateway", "-c", "/app/config/config.yaml"]
           volumeMounts:
             - name: config
               mountPath: /app/config
               readOnly: true
           {{- end }}
-          {{- if .Values.helicone.aiGateway.resources }}
+          {{- if .Values.aiGateway.resources }}
           resources:
-            {{- toYaml .Values.helicone.aiGateway.resources | nindent 12 }}
+            {{- toYaml .Values.aiGateway.resources | nindent 12 }}
           {{- end }}
-          {{- if .Values.helicone.aiGateway.livenessProbe.enabled }}
+          {{- if .Values.aiGateway.livenessProbe.enabled }}
           livenessProbe:
-            {{- if .Values.helicone.aiGateway.livenessProbe.httpGet }}
+            {{- if .Values.aiGateway.livenessProbe.httpGet }}
             httpGet:
-              path: {{ .Values.helicone.aiGateway.livenessProbe.httpGet.path }}
-              port: {{ .Values.helicone.aiGateway.livenessProbe.httpGet.port }}
-              scheme: {{ .Values.helicone.aiGateway.livenessProbe.httpGet.scheme }}
+              path: {{ .Values.aiGateway.livenessProbe.httpGet.path }}
+              port: {{ .Values.aiGateway.livenessProbe.httpGet.port }}
+              scheme: {{ .Values.aiGateway.livenessProbe.httpGet.scheme }}
             {{- end }}
-            initialDelaySeconds: {{ .Values.helicone.aiGateway.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.helicone.aiGateway.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.helicone.aiGateway.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.helicone.aiGateway.livenessProbe.failureThreshold }}
-            successThreshold: {{ .Values.helicone.aiGateway.livenessProbe.successThreshold }}
+            initialDelaySeconds: {{ .Values.aiGateway.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.aiGateway.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.aiGateway.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.aiGateway.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.aiGateway.livenessProbe.successThreshold }}
           {{- end }}
-          {{- if .Values.helicone.aiGateway.readinessProbe.enabled }}
+          {{- if .Values.aiGateway.readinessProbe.enabled }}
           readinessProbe:
-            {{- if .Values.helicone.aiGateway.readinessProbe.httpGet }}
+            {{- if .Values.aiGateway.readinessProbe.httpGet }}
             httpGet:
-              path: {{ .Values.helicone.aiGateway.readinessProbe.httpGet.path }}
-              port: {{ .Values.helicone.aiGateway.readinessProbe.httpGet.port }}
-              scheme: {{ .Values.helicone.aiGateway.readinessProbe.httpGet.scheme }}
+              path: {{ .Values.aiGateway.readinessProbe.httpGet.path }}
+              port: {{ .Values.aiGateway.readinessProbe.httpGet.port }}
+              scheme: {{ .Values.aiGateway.readinessProbe.httpGet.scheme }}
             {{- end }}
-            initialDelaySeconds: {{ .Values.helicone.aiGateway.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.helicone.aiGateway.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.helicone.aiGateway.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.helicone.aiGateway.readinessProbe.failureThreshold }}
-            successThreshold: {{ .Values.helicone.aiGateway.readinessProbe.successThreshold }}
+            initialDelaySeconds: {{ .Values.aiGateway.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.aiGateway.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.aiGateway.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.aiGateway.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.aiGateway.readinessProbe.successThreshold }}
           {{- end }}
-          {{- if .Values.helicone.aiGateway.startupProbe.enabled }}
+          {{- if .Values.aiGateway.startupProbe.enabled }}
           startupProbe:
-            {{- if .Values.helicone.aiGateway.startupProbe.httpGet }}
+            {{- if .Values.aiGateway.startupProbe.httpGet }}
             httpGet:
-              path: {{ .Values.helicone.aiGateway.startupProbe.httpGet.path }}
-              port: {{ .Values.helicone.aiGateway.startupProbe.httpGet.port }}
-              scheme: {{ .Values.helicone.aiGateway.startupProbe.httpGet.scheme }}
+              path: {{ .Values.aiGateway.startupProbe.httpGet.path }}
+              port: {{ .Values.aiGateway.startupProbe.httpGet.port }}
+              scheme: {{ .Values.aiGateway.startupProbe.httpGet.scheme }}
             {{- end }}
-            initialDelaySeconds: {{ .Values.helicone.aiGateway.startupProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.helicone.aiGateway.startupProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.helicone.aiGateway.startupProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.helicone.aiGateway.startupProbe.failureThreshold }}
-            successThreshold: {{ .Values.helicone.aiGateway.startupProbe.successThreshold }}
+            initialDelaySeconds: {{ .Values.aiGateway.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.aiGateway.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.aiGateway.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.aiGateway.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.aiGateway.startupProbe.successThreshold }}
           {{- end }}
           env:
             {{- include "helicone.ai-gateway.env" . | nindent 12 }}
-      {{- if .Values.helicone.aiGateway.config }}
+      {{- if .Values.aiGateway.config }}
       volumes:
         - name: config
           configMap:
