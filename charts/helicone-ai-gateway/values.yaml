@@ -4,10 +4,9 @@ helicone:
     image:
       repository: helicone/ai-gateway
       pullPolicy: IfNotPresent
-      tag: "latest"
+      tag: "sha-765b2b1"
     replicaCount: 2
 
-    # TODO: add canaries or blue-green
     # Rolling Update Deployment Strategy
     strategy:
       type: RollingUpdate
@@ -16,7 +15,7 @@ helicone:
         maxSurge: 25%
 
     # Progress deadline for deployments (in seconds)
-    progressDeadlineSeconds: 90
+    progressDeadlineSeconds: 600
 
     service:
       annotations: {}
@@ -48,7 +47,7 @@ helicone:
         port: http
         scheme: HTTP
       initialDelaySeconds: 30
-      periodSeconds: 15
+      periodSeconds: 30
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
@@ -59,8 +58,8 @@ helicone:
         path: /health
         port: http
         scheme: HTTP
-      initialDelaySeconds: 30
-      periodSeconds: 15
+      initialDelaySeconds: 5
+      periodSeconds: 10
       timeoutSeconds: 3
       failureThreshold: 3
       successThreshold: 1
@@ -74,34 +73,54 @@ helicone:
       initialDelaySeconds: 10
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 20
+      failureThreshold: 30
       successThreshold: 1
 
-    #TODO: proper secrets handling
-    secrets:
-      dbUrl: "postgresql://postgres:testpassword@192.168.64.1:54388/helicone_test"
-      dbCert: ""
-
+    extraEnvVars:
+      - name: AI_GATEWAY__SERVER__ADDRESS
+        value: "0.0.0.0"
+      - name: OPENAI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: helicone-ai-gateway-secrets
+            key: openai_api_key
+      # Only required if deployment target == cloud
+      # - name: AI_GATEWAY__MINIO__ACCESS_KEY
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: helicone-minio-secrets
+      #       key: root_user
+      # - name: AI_GATEWAY__MINIO__SECRET_KEY
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: helicone-minio-secrets
+      #       key: root_password
     config:
-      telemetry:
-        level: "info,ai_gateway=trace"
-        format: "compact"
-        exporter: both
-        otlp-endpoint: "http://otel-collector.otel.svc.cluster.local:4317/v1/metrics"
-
+      routers:
+        default:
+          load-balance:
+            chat:
+              strategy: latency
+              targets:
+                - openai
+                - anthropic
+      providers:
+        ollama:
+          base-url: "http://ollama:11434"
+        bedrock:
+          base-url: "https://bedrock.us-east-1.amazonaws.com"
       helicone:
-        features: all
+        authentication: true
 
-      cache-store:
-        type: redis
-        host-url: "redis://:GY9y1SO82g@my-valkey-primary.default.svc.cluster.local:6379/0"
-
-      rate-limit-store:
-        type: redis
-        host-url: "redis://:GY9y1SO82g@my-valkey-primary.default.svc.cluster.local:6379/0"
-
-      deployment-target:
-        type: cloud
-
-      database:
-        url: "postgresql://postgres:testpassword@192.168.64.1:54388/helicone_test"
+    secrets:
+      # Set these values using kubectl create secret or your preferred secrets management
+      # kubectl create secret generic helicone-ai-gateway-secrets \
+      #   --from-literal=proxy_helicone_api_key="your-key-here" \
+      #   --from-literal=openai_api_key="your-key-here" \
+      #   --from-literal=anthropic_api_key="your-key-here" \
+      #   --from-literal=gemini_api_key="your-key-here" \
+      #   --from-literal=helicone_api_key="your-key-here"
+      aiGatewayOpenaiApiKey: ""
+      aiGatewayAnthropicApiKey: ""
+      aiGatewayGeminiApiKey: ""
+      aiGatewayHeliconeApiKey: ""

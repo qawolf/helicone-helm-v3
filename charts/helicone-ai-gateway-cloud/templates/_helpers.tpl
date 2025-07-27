@@ -43,6 +43,19 @@ helm.sh/chart: {{ include "helicone.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+# TODO Add another env var for the SSL certificate
+{{- define "helicone.ai-gateway.env" -}}
+
+- name: AI_GATEWAY__DB__URL
+  valueFrom:
+    secretKeyRef:
+      name: ai-gateway-secrets
+      key: db-url
+
+{{- with .Values.helicone.aiGateway.extraEnvVars }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
 {{- end }}
