@@ -43,8 +43,8 @@ helm.sh/chart: {{ include "helicone.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
 
 {{- define "ai-gateway.env.minioAndRedisParams" -}}
 - name: AI_GATEWAY__MINIO__HOST
@@ -68,6 +68,3 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
       name: {{ .Values.helicone.aiGateway.redisHostSecretName | default "ai-gateway-redis-host" | quote }}
       key: {{ .Values.helicone.aiGateway.redisHostSecretKey | default "host_url" | quote }}
 {{- end }}
-
-
-
