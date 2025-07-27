@@ -77,27 +77,28 @@ helicone:
       failureThreshold: 20
       successThreshold: 1
 
+    #TODO: remove
+    secrets:
+      dbUrl: "postgres://postgres:testpassword@localhost:54388/helicone_test"
+      dbCert: ""
+
     config:
       telemetry:
         level: "info,ai_gateway=trace"
         format: "compact"
         exporter: stdout
+        otlp-endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317/v1/metrics"
 
       helicone:
         features: all
 
-      minio:
-        bucket-name: "request-response-storage"
-        region: "us-west-2"
-        host: "https://s3.us-west-2.amazonaws.com"
-
       cache-store:
         type: redis
-        host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+        host-url: "redis://localhost:6379"
 
       rate-limit-store:
         type: redis
-        host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+        host-url: "redis://localhost:6379"
 
       deployment-target:
         type: cloud

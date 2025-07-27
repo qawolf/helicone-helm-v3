@@ -55,7 +55,7 @@ beyla:
 
   # OpenTelemetry configuration
   otel:
-    endpoint: "http://helicone-infrastructure-otel-collector:4317"
+    endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317"
     headers: ""
     protocol: "grpc"
 
@@ -174,14 +174,13 @@ prometheus:
     - enable-feature=exemplar-storage
 
   server:
-    ## Prometheus server container name
-    name: prometheus-server
     persistentVolume:
       mountPath: "/var/lib/prometheus"
 
 # Tempo configuration for distributed tracing
 tempo:
   enabled: true
+  fullnameOverride: "tempo"
   persistence:
     enabled: true
     size: "10Gi"
@@ -289,6 +288,8 @@ opentelemetry-collector:
     repository: "otel/opentelemetry-collector"
     tag: "0.127.0"
 
+  nameOverride: "otel-collector"
+
   # Override the default config with your custom configuration
   config:
     receivers:
@@ -299,15 +300,15 @@ opentelemetry-collector:
 
     exporters:
       otlp:
-        endpoint: helicone-infrastructure-tempo:4317
+        endpoint: http://tempo.helicone-infrastructure.svc.cluster.local:4317
         tls:
           insecure: true
       otlphttp:
-        endpoint: http://helicone-infrastructure-loki:3100/otlp
+        endpoint: http://loki.helicone-infrastructure.svc.cluster.local:3100/otlp
         tls:
           insecure: true
       otlphttp/prom:
-        endpoint: http://helicone-infrastructure-prometheus-server:80/api/v1/otlp
+        endpoint: http://prometheus-server.helicone-infrasturcture.svc.cluster.local:80/api/v1/otlp
         tls:
           insecure: true
 
