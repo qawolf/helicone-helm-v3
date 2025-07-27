@@ -9,3 +9,4 @@ data:
   config.yaml: |
     {{- .Values.helicone.aiGateway.config | toYaml | nindent 4 }}
 {{- end }}
+
