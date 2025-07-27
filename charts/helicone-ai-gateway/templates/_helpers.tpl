@@ -53,11 +53,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
     secretKeyRef:
       name: ai-gateway-secrets
       key: db-url
-- name: PGSSLROOTCERT
-  valueFrom:
-    secretKeyRef:
-      name: ai-gateway-secrets
-      key: db-cert
 
 {{- with .Values.helicone.aiGateway.extraEnvVars }}
 {{- toYaml . | nindent 0 }}

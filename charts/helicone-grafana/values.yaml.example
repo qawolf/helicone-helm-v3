@@ -84,10 +84,7 @@ grafana:
           options:
             path: /var/lib/grafana/dashboards/default
   
-  # Dashboards from ConfigMaps
-  dashboardsConfigMaps:
-    default: helicone-dashboards
-  
+
   # Sidecar for dashboard discovery
   sidecar:
     dashboards:

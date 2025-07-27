@@ -77,28 +77,31 @@ helicone:
       failureThreshold: 20
       successThreshold: 1
 
-    #TODO: remove
+    #TODO: proper secrets handling
     secrets:
-      dbUrl: "postgres://postgres:testpassword@localhost:54388/helicone_test"
+      dbUrl: "postgresql://postgres:testpassword@192.168.64.1:54388/helicone_test"
       dbCert: ""
 
     config:
       telemetry:
         level: "info,ai_gateway=trace"
         format: "compact"
-        exporter: stdout
-        otlp-endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317/v1/metrics"
+        exporter: both
+        otlp-endpoint: "http://otel-collector.otel.svc.cluster.local:4317/v1/metrics"
 
       helicone:
         features: all
 
       cache-store:
         type: redis
-        host-url: "redis://localhost:6379"
+        host-url: "redis://:GY9y1SO82g@my-valkey-primary.default.svc.cluster.local:6379/0"
 
       rate-limit-store:
         type: redis
-        host-url: "redis://localhost:6379"
+        host-url: "redis://:GY9y1SO82g@my-valkey-primary.default.svc.cluster.local:6379/0"
 
       deployment-target:
         type: cloud
+
+      database:
+        url: "postgresql://postgres:testpassword@192.168.64.1:54388/helicone_test"

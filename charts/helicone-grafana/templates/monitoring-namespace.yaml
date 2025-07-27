@@ -1,10 +1,10 @@
-{{- if default "" .Values.monitoring.namespaceOverride }}
+{{- if and .Values.monitoring (default "" .Values.monitoring.namespaceOverride) }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ default "" .Values.monitoring.namespaceOverride }}
+  name: {{ .Values.monitoring.namespaceOverride }}
   labels:
-    name: {{ default "" .Values.monitoring.namespaceOverride }}
+    name: {{ .Values.monitoring.namespaceOverride }}
     {{- include "helicone.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade

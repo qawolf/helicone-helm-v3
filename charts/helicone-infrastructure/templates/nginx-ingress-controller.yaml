@@ -232,7 +232,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "helicone.fullname" . }}-nginx-ingress-controller
+  name: {{ include "helicone.fullname" . }}-nginx
   namespace: {{ .Values.nginxIngressController.namespace }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
