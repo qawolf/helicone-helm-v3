@@ -46,25 +46,20 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{- define "ai-gateway.env.minioAndRedisParams" -}}
-- name: AI_GATEWAY__MINIO__HOST
+{{- define "helicone.ai-gateway.env" -}}
+
+- name: AI_GATEWAY__DB__URL
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.helicone.aiGateway.minioHostSecretName | default "ai-gateway-minio-host" | quote }}
-      key: {{ .Values.helicone.aiGateway.minioHostSecretKey | default "host" | quote }}
-- name: AI_GATEWAY__MINIO__REGION
+      name: ai-gateway-secrets
+      key: db-url
+- name: PGSSLROOTCERT
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.helicone.aiGateway.minioRegionSecretName | default "ai-gateway-minio-region" | quote }}
-      key: {{ .Values.helicone.aiGateway.minioRegionSecretKey | default "region" | quote }}
-- name: AI_GATEWAY__CACHE_STORE__HOST_URL
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.helicone.aiGateway.redisHostSecretName | default "ai-gateway-redis-host" | quote }}
-      key: {{ .Values.helicone.aiGateway.redisHostSecretKey | default "host_url" | quote }}
-- name: AI_GATEWAY__RATE_LIMIT_STORE__HOST_URL
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.helicone.aiGateway.redisHostSecretName | default "ai-gateway-redis-host" | quote }}
-      key: {{ .Values.helicone.aiGateway.redisHostSecretKey | default "host_url" | quote }}
+      name: ai-gateway-secrets
+      key: db-cert
+
+{{- with .Values.helicone.aiGateway.extraEnvVars }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
 {{- end }}

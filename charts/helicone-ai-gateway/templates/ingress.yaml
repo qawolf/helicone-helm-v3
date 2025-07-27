@@ -1,11 +1,6 @@
 {{- if .Values.helicone.aiGateway.ingress.enabled -}}
 {{- $fullName := include "helicone.ai-gateway.name" . -}}
 {{- $svcPort := .Values.helicone.aiGateway.service.port -}}
-{{- if and .Values.helicone.aiGateway.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.helicone.jawn.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.helicone.jawn.ingress.annotations "kubernetes.io/ingress.class" .Values.helicone.jawn.ingress.className}}
-  {{- end }}
-{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

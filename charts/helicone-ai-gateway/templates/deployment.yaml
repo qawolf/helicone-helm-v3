@@ -88,16 +88,6 @@ spec:
             failureThreshold: {{ .Values.helicone.aiGateway.startupProbe.failureThreshold }}
             successThreshold: {{ .Values.helicone.aiGateway.startupProbe.successThreshold }}
           {{- end }}
-          env:
-            # TODO Move to _helpers.tpl
-            - name: HELICONE_CONTROL_PLANE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: helicone-ai-gateway-secrets
-                  key: helicone_api_key
-            {{- with .Values.helicone.aiGateway.extraEnvVars }}
-              {{- toYaml . | nindent 12 }}
-            {{- end }}
       {{- if .Values.helicone.aiGateway.config }}
       volumes:
         - name: config

@@ -4,7 +4,7 @@ helicone:
     image:
       repository: helicone/ai-gateway
       pullPolicy: IfNotPresent
-      tag: "sha-90af8c4"
+      tag: "latest"
     replicaCount: 2
 
     # TODO: add canaries or blue-green
@@ -88,11 +88,16 @@ helicone:
 
       minio:
         bucket-name: "request-response-storage"
+        region: "us-west-2"
+        host: "https://s3.us-west-2.amazonaws.com"
 
       cache-store:
         type: redis
+        host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
 
       rate-limit-store:
         type: redis
+        host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
 
-      deployment-target: cloud
+      deployment-target:
+        type: cloud
