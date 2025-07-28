@@ -7,6 +7,10 @@ metadata:
   namespace: {{ .Values.nginxIngressController.namespace }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 automountServiceAccountToken: true
 
 ---
@@ -16,6 +20,8 @@ metadata:
   name: {{ include "helicone.fullname" . }}-nginx-ingress
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
 rules:
   - apiGroups:
       - ""
@@ -95,6 +101,8 @@ metadata:
   name: {{ include "helicone.fullname" . }}-nginx-ingress
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -236,6 +244,8 @@ metadata:
   namespace: {{ .Values.nginxIngressController.namespace }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
 spec:
   replicas: 1
   selector:

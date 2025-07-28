@@ -1,0 +1,56 @@
+{{- if .Values.dependencyChecks.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: infra-wait-for-tempo-{{ .Release.Revision | default 1 }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: otel-dependency-check
+    release: {{ .Release.Name }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: otel-dependency-check
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: wait-for-tempo
+        image: busybox:1.35
+        command:
+          - sh
+          - -c
+          - |
+            echo "Starting dependency check for OpenTelemetry Collector -> Tempo"
+            
+            # Check if Tempo service exists
+            if nslookup tempo.{{ .Release.Namespace }}.svc.cluster.local > /dev/null 2>&1; then
+              echo "✓ Tempo service found"
+            else
+              echo "Waiting for Tempo service to be created..."
+              until nslookup tempo.{{ .Release.Namespace }}.svc.cluster.local; do
+                echo "Tempo service not found, waiting 10 seconds..."
+                sleep 10
+              done
+              echo "✓ Tempo service found"
+            fi
+            
+            # Check if Tempo is already healthy
+            if wget -q --timeout=5 --tries=1 --spider http://tempo.{{ .Release.Namespace }}.svc.cluster.local:3200/ready; then
+              echo "✓ Tempo is already healthy"
+            else
+              echo "Waiting for Tempo to become healthy..."
+              until wget -q --timeout=5 --tries=1 --spider http://tempo.{{ .Release.Namespace }}.svc.cluster.local:3200/ready; do
+                echo "Tempo health check failed, waiting 10 seconds..."
+                sleep 10
+              done
+              echo "✓ Tempo health check passed"
+            fi
+            
+            echo "🎉 Dependency check completed! Tempo is ready for OpenTelemetry Collector."
+{{- end }} 

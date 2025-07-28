@@ -10,6 +10,10 @@ fullnameOverride: "infra"
 # Global configuration
 global: {}
 
+# Dependency management configuration
+dependencyChecks:
+  enabled: true
+
 # Cluster Autoscaler configuration
 clusterAutoscaler:
   enabled: false # Disabled to avoid conflicts with existing installation
@@ -84,6 +88,10 @@ nginxIngressController:
   enabled: true
   namespace: helicone-infrastructure
   fullnameOverride: "nginx-controller"
+
+  # Set to false if you have an existing nginx-ingress-controller that conflicts
+  # This will skip creating nginx resources to avoid ownership conflicts
+  skipExistingResources: false
 
   # Watch all namespaces for ingress resources
   watchIngressWithoutClass: true
