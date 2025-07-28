@@ -4,20 +4,17 @@
 #
 ################################################################################
 
-# Override the full name of the release
-fullnameOverride: "infra"
-
-# Global configuration
-global: {}
-
 # Cluster Autoscaler configuration
 clusterAutoscaler:
-  enabled: false # Disabled to avoid conflicts with existing installation
+  enabled: true
   image:
-    tag: "v1.26.2" # Should match your Kubernetes version
-  clusterName: "helicone-cluster" # Replace with your actual cluster name
+    tag: "v1.30.0"
+  clusterName: "helicone"
   serviceAccount:
-    roleArn: "" # ARN of the IAM role for cluster autoscaler (must be set for production)
+    create: true
+    name: "cluster-autoscaler"
+    # Note: No IAM role annotations needed - EKS Pod Identity handles this automatically
+    # The role association is managed by Terraform via aws_eks_pod_identity_association
   extraArgs:
     - "--scale-down-delay-after-add=10m"
     - "--scale-down-unneeded-time=10m"
@@ -429,11 +426,9 @@ aws-load-balancer-controller:
   # Cluster name is required for the controller to work
   clusterName: "helicone" # This should match your EKS cluster name
 
-  # Service account configuration
-  serviceAccount:
-    create: true # Create the service account since we're using EKS Pod Identity Association
-    name: "aws-load-balancer-controller"
-    annotations: {}
+  # Service account configuration - MANAGED BY TERRAFORM
+  # Pod Identity association is managed by Terraform (terraform/eks/addons.tf)
+  # ServiceAccount creation and IAM role association handled automatically
 
   # Controller configuration
   replicaCount: 2

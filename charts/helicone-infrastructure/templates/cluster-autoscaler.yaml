@@ -1,69 +1,4 @@
 {{- if .Values.clusterAutoscaler.enabled }}
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-      annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '8085'
-    spec:
-      priorityClassName: system-cluster-critical
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
-        fsGroup: 65534
-        seccompProfile:
-          type: RuntimeDefault
-      serviceAccountName: cluster-autoscaler
-      containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ .Values.clusterAutoscaler.image.tag }}
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 600Mi
-            requests:
-              cpu: 100m
-              memory: 600Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/{{ .Values.clusterAutoscaler.clusterName }}
-            - --balance-similar-node-groups
-            - --skip-nodes-with-system-pods=false
-            {{- range .Values.clusterAutoscaler.extraArgs }}
-            - {{ . }}
-            {{- end }}
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-bundle.crt"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -71,10 +6,8 @@ metadata:
   labels:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
-  name: cluster-autoscaler
+  name: {{ .Values.clusterAutoscaler.serviceAccount.name }}
   namespace: kube-system
-  annotations:
-    eks.amazonaws.com/role-arn: {{ .Values.clusterAutoscaler.serviceAccount.roleArn }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -145,6 +78,72 @@ roleRef:
   name: cluster-autoscaler
 subjects:
   - kind: ServiceAccount
-    name: cluster-autoscaler
+    name: {{ .Values.clusterAutoscaler.serviceAccount.name }}
     namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    app: cluster-autoscaler
+spec:
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8085'
+    spec:
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: {{ .Values.clusterAutoscaler.serviceAccount.name }}
+      containers:
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ .Values.clusterAutoscaler.image.tag }}
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 600Mi
+            requests:
+              cpu: 100m
+              memory: 600Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=4
+            - --stderrthreshold=info
+            - --cloud-provider=aws
+            - --skip-nodes-with-local-storage=false
+            - --expander=least-waste
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/{{ .Values.clusterAutoscaler.clusterName }}
+            - --balance-similar-node-groups
+            - --skip-nodes-with-system-pods=false
+            {{- range .Values.clusterAutoscaler.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              readOnly: true
+          imagePullPolicy: "Always"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-bundle.crt"
 {{- end }} 
