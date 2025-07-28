@@ -18,6 +18,10 @@ dependencies:
     version: "0.129.0"
     repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
     condition: opentelemetry-collector.enabled
+  - name: aws-load-balancer-controller
+    version: "1.8.4"
+    repository: "https://aws.github.io/eks-charts"
+    condition: awsLoadBalancerController.enabled
 
 keywords:
   - helicone

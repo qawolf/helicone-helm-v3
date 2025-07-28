@@ -41,7 +41,7 @@ aiGateway:
 
   service:
     annotations: {}
-    type: NodePort
+    type: NodePort # ALB works with NodePort services
     port: 8080
   ingress:
     enabled: true
@@ -49,7 +49,7 @@ aiGateway:
     annotations:
       # AWS Load Balancer Controller annotations for ALB
       alb.ingress.kubernetes.io/load-balancer-name: "helicone-ai-gateway-alb"
-      alb.ingress.kubernetes.io/scheme: "internet-facing"
+      alb.ingress.kubernetes.io/scheme: "internal"
       alb.ingress.kubernetes.io/target-type: "instance"
       alb.ingress.kubernetes.io/healthcheck-path: "/health"
       alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
@@ -57,13 +57,21 @@ aiGateway:
       alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
       alb.ingress.kubernetes.io/healthy-threshold-count: "1"
       alb.ingress.kubernetes.io/unhealthy-threshold-count: "5"
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      # Additional recommended ALB annotations
+      alb.ingress.kubernetes.io/backend-protocol: "HTTP"
+      alb.ingress.kubernetes.io/target-node-labels: "ingress-ready=true"
+      alb.ingress.kubernetes.io/group.name: "helicone-alb-group" # Group multiple ingresses to same ALB
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
     hosts:
       - host: helicone.ai
         paths:
           - path: /ai-gateway
             pathType: Prefix
-    tls: []
+    tls:
+      - hosts:
+          - helicone.ai
+        # secretName: helicone-ai-gateway-tls # Optional: if using Kubernetes secret instead of ACM
   resources:
     requests:
       cpu: 50m
@@ -124,8 +132,6 @@ aiGateway:
       region: "us-west-2"
       host: "https://s3.us-west-2.amazonaws.com"
 
-    # Legacy static configuration (kept for backward compatibility)
-    # When valkey.endpoint is set above, these values are overridden
     cache-store:
       type: redis
       host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"

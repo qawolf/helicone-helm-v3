@@ -169,4 +169,20 @@ output "alb_controller_pod_identity_association_arn" {
 output "alb_controller_namespace" {
   description = "Namespace for AWS Load Balancer Controller"
   value       = var.enable_alb_controller ? var.alb_controller_namespace : null
+}
+
+# AI Gateway ALB Outputs
+output "ai_gateway_alb_arn" {
+  description = "ARN of the AI Gateway ALB (created by AWS Load Balancer Controller)"
+  value       = try(data.aws_lb.ai_gateway_alb[0].arn, null)
+}
+
+output "ai_gateway_alb_dns_name" {
+  description = "DNS name of the AI Gateway ALB"
+  value       = try(data.aws_lb.ai_gateway_alb[0].dns_name, null)
+}
+
+output "ai_gateway_alb_zone_id" {
+  description = "Zone ID of the AI Gateway ALB"
+  value       = try(data.aws_lb.ai_gateway_alb[0].zone_id, null)
 } 

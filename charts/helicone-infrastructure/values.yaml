@@ -418,3 +418,125 @@ opentelemetry-collector:
       enabled: false
     metrics:
       enabled: false
+
+# AWS Load Balancer Controller configuration
+# TODO DRY up between awsLoadBalancerController and aws-load-balancer-controller
+awsLoadBalancerController:
+  enabled: true
+
+# AWS Load Balancer Controller subchart configuration
+aws-load-balancer-controller:
+  # Cluster name is required for the controller to work
+  clusterName: "helicone" # This should match your EKS cluster name
+
+  # Service account configuration
+  serviceAccount:
+    create: true # Create the service account since we're using EKS Pod Identity Association
+    name: "aws-load-balancer-controller"
+    annotations: {}
+
+  # Controller configuration
+  replicaCount: 2
+
+  # Resources
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  # Enable webhook for cert-manager integration
+  enableCertManager: false
+
+  # Region configuration (auto-detected from IMDS if not set)
+  region: ""
+
+  # VPC ID (auto-detected if not set)
+  vpcId: ""
+
+  # Additional controller arguments
+  additionalResourceTags: {}
+
+  # Default ingress class
+  ingressClass: alb
+  createIngressClassResource: true
+
+  # Enable shield, WAF, and WAFv2 (optional)
+  enableShield: false
+  enableWaf: false
+  enableWafv2: false
+
+  # Log level
+  logLevel: info
+
+  # Pod disruption budget
+  podDisruptionBudget:
+    maxUnavailable: 1
+
+  # Update strategy
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+
+  # Node selector for pod assignment
+  nodeSelector: {}
+
+  # Tolerations for pod assignment
+  tolerations: []
+
+  # Affinity for pod assignment
+  affinity: {}
+
+  # Priority class name
+  priorityClassName: ""
+
+  # Security context
+  securityContext:
+    fsGroup: 65534
+
+  # Pod labels
+  podLabels: {}
+
+  # Pod annotations
+  podAnnotations: {}
+
+  # Environment variables
+  env: []
+
+  # Volume mounts
+  volumeMounts: []
+
+  # Volumes
+  volumes: []
+
+  # Liveness probe configuration
+  livenessProbe:
+    failureThreshold: 2
+    httpGet:
+      path: /healthz
+      port: 61779
+      scheme: HTTP
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
+
+  # Namespace to watch (empty = all namespaces)
+  watchNamespace: ""
+
+  # Default target type for ALBs (instance or ip)
+  defaultTargetType: instance
+
+  # Enable pod readiness gate inject
+  enablePodReadinessGateInject: true
+
+  # Enable endpoint slices
+  enableEndpointSlices: true
+
+  # Service monitor for Prometheus
+  serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+    interval: 30s
+    namespace: ""
