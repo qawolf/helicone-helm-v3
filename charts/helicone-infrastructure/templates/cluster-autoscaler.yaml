@@ -42,6 +42,9 @@ rules:
       - "persistentvolumeclaims"
       - "persistentvolumes"
     verbs: ["watch", "list", "get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "update", "patch"]
   - apiGroups: ["extensions"]
     resources: ["replicasets", "daemonsets"]
     verbs: ["watch", "list", "get"]
