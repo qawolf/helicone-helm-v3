@@ -214,4 +214,23 @@ variable "pod_identity_agent_version" {
   default     = "v1.0.0-eksbuild.1"
 }
 
+# AWS Load Balancer Controller Configuration
+variable "enable_alb_controller" {
+  description = "Enable AWS Load Balancer Controller for managing ALBs and NLBs"
+  type        = bool
+  default     = false
+}
+
+variable "alb_controller_policy_arn" {
+  description = "ARN of the AWS Load Balancer Controller IAM policy (optional, will be created if not provided)"
+  type        = string
+  default     = ""
+}
+
+variable "alb_controller_namespace" {
+  description = "Namespace for the ALB controller"
+  type        = string
+  default     = "default"
+}
+
  

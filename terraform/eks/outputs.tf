@@ -140,4 +140,33 @@ output "pod_identity_agent_addon_version" {
 output "pod_identity_agent_addon_name" {
   description = "Name of the EKS Pod Identity Agent addon"
   value       = var.enable_pod_identity_agent ? aws_eks_addon.pod_identity_agent[0].addon_name : null
+}
+
+#################################################################################
+# AWS Load Balancer Controller Outputs
+#################################################################################
+
+output "alb_controller_role_arn" {
+  description = "ARN of the AWS Load Balancer Controller IAM role"
+  value       = var.enable_alb_controller ? aws_iam_role.alb_controller_role[0].arn : null
+}
+
+output "alb_controller_role_name" {
+  description = "Name of the AWS Load Balancer Controller IAM role"
+  value       = var.enable_alb_controller ? aws_iam_role.alb_controller_role[0].name : null
+}
+
+output "alb_controller_policy_arn" {
+  description = "ARN of the AWS Load Balancer Controller IAM policy"
+  value       = var.enable_alb_controller && var.alb_controller_policy_arn == "" ? aws_iam_policy.alb_controller_policy[0].arn : var.alb_controller_policy_arn
+}
+
+output "alb_controller_pod_identity_association_arn" {
+  description = "ARN of the AWS Load Balancer Controller Pod Identity Association"
+  value       = var.enable_alb_controller ? aws_eks_pod_identity_association.alb_controller[0].association_arn : null
+}
+
+output "alb_controller_namespace" {
+  description = "Namespace for AWS Load Balancer Controller"
+  value       = var.enable_alb_controller ? var.alb_controller_namespace : null
 } 
