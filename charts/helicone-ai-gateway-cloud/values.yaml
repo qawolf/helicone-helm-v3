@@ -109,5 +109,4 @@ aiGateway:
       type: redis
       host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
 
-    deployment-target:
-      type: cloud
+    deployment-target: cloud

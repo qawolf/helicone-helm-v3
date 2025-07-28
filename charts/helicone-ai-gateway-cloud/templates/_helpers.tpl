@@ -46,15 +46,18 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-# TODO Add another env var for the SSL certificate
 {{- define "helicone.ai-gateway.env" -}}
 
-- name: AI_GATEWAY__DB__URL
+- name: AI_GATEWAY__DATABASE__URL
   valueFrom:
     secretKeyRef:
       name: ai-gateway-secrets
-      key: db-url
-
+      key: dbUrl
+- name: PGSSLROOTCERT
+  valueFrom:
+    secretKeyRef:
+      name: ai-gateway-secrets
+      key: dbCert
 {{- with .Values.aiGateway.extraEnvVars }}
 {{- toYaml . | nindent 0 }}
 {{- end }}
