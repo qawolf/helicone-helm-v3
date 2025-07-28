@@ -5,6 +5,20 @@
 ################################################################################
 
 helicone:
+  # S3 configuration for service account-based access
+  s3:
+    # Set to true to use service accounts with IAM roles instead of access keys
+    serviceAccount:
+      enabled: true
+      # IAM role ARN for the service account to assume (will be updated after terraform apply)
+      roleArn: "arn:aws:iam::849596434884:role/helm-request-response-storage-service-account-role"
+      # AWS region for S3 service
+      region: "us-west-2"
+    # S3 bucket name (used when serviceAccount.enabled is true)
+    bucketName: "helm-request-response-storage"
+    # S3 endpoint (defaults to AWS S3 when using service accounts)
+    endpoint: "https://s3.us-west-2.amazonaws.com"
+
   web:
     enabled: true
     image:
@@ -251,7 +265,7 @@ helicone:
 
   # Note: If enabled is set to false, then S3 is used instead of MinIO
   minio:
-    enabled: true
+    enabled: false
     image:
       repository: minio/minio
       pullPolicy: IfNotPresent
@@ -330,21 +344,11 @@ helicone:
           percentPolicy: 100
           periodSeconds: 15
 
-mailhog:
-  enabled: true
-  image:
-    repository: mailhog/mailhog
-    tag: latest
-    pullPolicy: IfNotPresent
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "200m"
-
+  # Application configuration
   config:
+    # External database configuration (not needed when cloudnativepg.enabled=true)
+    dbPort: "5432" # Default port for PostgreSQL
+    heliconePassword: "changeme-in-production" # Password for helicone app user
     vercelEnv: "development"
     clickhouseHost: "https://ucewi94kth.us-west-2.aws.clickhouse.cloud" # TODO Not doing DRY between the two configs (above configuration as well)
     clickhousePort: "8443"
@@ -384,20 +388,19 @@ mailhog:
     googleProjectNumber: "GOOGLE_PROJECT_NUMBER"
     nodeEnv: "development"
 
-  # S3 Service Account Configuration (IRSA)
-  # Enable this to use IAM roles for service accounts instead of access keys
-  s3:
-    serviceAccount:
-      # Set to true to enable service account-based S3 access
-      enabled: false
-      # IAM role ARN that the service accounts will assume
-      # This should be the output from the S3 terraform module
-      # Example: "arn:aws:iam::123456789012:role/helm-request-response-storage-service-account-role"
-      roleArn: ""
-    # S3 configuration when using service accounts
-    bucketName: "helm-request-response-storage"
-    # S3 endpoint (leave default for AWS S3)
-    endpoint: "https://s3.amazonaws.com"
+mailhog:
+  enabled: true
+  image:
+    repository: mailhog/mailhog
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
 
 #################################################################################
 # External Secrets Configuration
