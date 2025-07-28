@@ -3,7 +3,8 @@ aiGateway:
   image:
     repository: helicone/ai-gateway
     pullPolicy: IfNotPresent
-    tag: "sha-90af8c4"
+    #tag: "sha-90af8c4"
+    tag: "sha-72280bd"
   replicaCount: 2
 
   # EKS Pod Identity Service Account Configuration
@@ -50,23 +51,30 @@ aiGateway:
       # AWS Load Balancer Controller annotations for ALB
       alb.ingress.kubernetes.io/load-balancer-name: "helicone-ai-gateway-alb"
       alb.ingress.kubernetes.io/scheme: "internal"
-      alb.ingress.kubernetes.io/target-type: "instance"
+      alb.ingress.kubernetes.io/target-type: "ip"
       alb.ingress.kubernetes.io/healthcheck-path: "/health"
       alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+      alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
       alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
       alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
-      alb.ingress.kubernetes.io/healthy-threshold-count: "1"
+      # this must be at least 2
+      alb.ingress.kubernetes.io/healthy-threshold-count: "2"
       alb.ingress.kubernetes.io/unhealthy-threshold-count: "5"
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
       # Additional recommended ALB annotations
       alb.ingress.kubernetes.io/backend-protocol: "HTTP"
-      alb.ingress.kubernetes.io/target-node-labels: "ingress-ready=true"
       alb.ingress.kubernetes.io/group.name: "helicone-alb-group" # Group multiple ingresses to same ALB
       alb.ingress.kubernetes.io/ssl-redirect: "443"
+      # Connection settings for LLM streaming - 5 minute idle timeout
+      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300,routing.http2.enabled=true
+      # Target group settings with appropriate deregistration delay
+      alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=20
+      # Tags for identification
+      alb.ingress.kubernetes.io/tags: Environment=production,Purpose=GlobalAccelerator
     hosts:
-      - host: helicone.ai
+      - host: ai-gateway.helicone.ai
         paths:
-          - path: /ai-gateway
+          - path: /
             pathType: Prefix
     tls:
       - hosts:
@@ -140,4 +148,5 @@ aiGateway:
       type: redis
       host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
 
-    deployment-target: cloud
+    deployment-target:
+      type: cloud

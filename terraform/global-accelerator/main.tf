@@ -50,7 +50,19 @@ resource "aws_globalaccelerator_listener" "tcp_listener" {
   }
 }
 
-# Endpoint Groups for each region
+# Additional listener for port 80 (HTTP)
+resource "aws_globalaccelerator_listener" "tcp_listener_http" {
+  accelerator_arn = aws_globalaccelerator_accelerator.helicone_global_accelerator.id
+  client_affinity = var.client_affinity
+  protocol        = "TCP"
+
+  port_range {
+    from_port = 80
+    to_port   = 80
+  }
+}
+
+# Endpoint Groups for each region (HTTPS)
 resource "aws_globalaccelerator_endpoint_group" "endpoint_groups" {
   for_each = var.endpoint_regions
 
@@ -69,6 +81,7 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_groups" {
     content {
       endpoint_id = endpoint_configuration.value
       weight      = var.endpoint_weight
+      client_ip_preservation_enabled = true
     }
   }
 
@@ -77,6 +90,30 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_groups" {
     content {
       listener_port = port_override.value.listener_port
       endpoint_port = port_override.value.endpoint_port
+    }
+  }
+}
+
+# Endpoint Groups for each region (HTTP)
+resource "aws_globalaccelerator_endpoint_group" "endpoint_groups_http" {
+  for_each = var.endpoint_regions
+
+  listener_arn = aws_globalaccelerator_listener.tcp_listener_http.id
+
+  endpoint_group_region         = each.key
+  traffic_dial_percentage       = each.value.traffic_percentage
+  health_check_interval_seconds = var.health_check_interval_seconds
+  health_check_path             = var.health_check_path
+  health_check_protocol         = "HTTP"
+  health_check_port             = 80
+  threshold_count               = var.threshold_count
+
+  dynamic "endpoint_configuration" {
+    for_each = each.value.alb_arns
+    content {
+      endpoint_id = endpoint_configuration.value
+      weight      = var.endpoint_weight
+      client_ip_preservation_enabled = true
     }
   }
 }
