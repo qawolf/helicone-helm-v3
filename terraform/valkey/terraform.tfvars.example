@@ -1,0 +1,39 @@
+# Valkey ElastiCache Serverless Configuration
+aws_region         = "us-west-2"
+valkey_cache_name  = "helicone-valkey-cache"
+
+# Capacity and performance settings
+max_storage_gb      = 5
+max_ecpu_per_second = 5000
+
+# Snapshot settings
+daily_snapshot_time      = "05:00"
+snapshot_retention_limit = 7
+
+# Network configuration
+create_subnet_group = true
+# vpc_id = "vpc-xxxxxxxxx"  # Optional: specify VPC ID
+# subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # Optional: specify subnet IDs
+
+# Security groups that should have access (EKS node groups, etc.)
+allowed_security_group_ids = [
+  # "sg-xxxxxxxxx"  # Add your EKS cluster security group here
+]
+
+# CIDR blocks that should have access (if needed)
+allowed_cidr_blocks = [
+  # "10.0.0.0/16"  # Add your VPC CIDR or specific networks
+]
+
+# EKS Pod Identity Configuration (REQUIRED for pod identity)
+eks_cluster_name                  = "helicone"                    # Must match your EKS cluster name
+kubernetes_namespace              = "default"                    # Namespace where your pods run
+kubernetes_service_account_name   = "helicone-ai-gateway"        # Service account name from Helm chart
+
+# Common tags
+common_tags = {
+  Project     = "Helicone"
+  Environment = "production"
+  ManagedBy   = "Terraform"
+  Component   = "Cache"
+} 

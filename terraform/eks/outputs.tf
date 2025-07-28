@@ -119,4 +119,70 @@ output "load_balancer_hostname" {
 output "load_balancer_zone_id" {
   description = "Load balancer zone ID from the ingress controller"
   value       = var.enable_ingress_nginx_lb_lookup ? try(data.aws_lb.ingress_nginx[0].zone_id, null) : null
+}
+
+output "ingress_nginx_load_balancer_zone_id" {
+  description = "The Route53 zone ID of the ingress-nginx load balancer"
+  value       = var.enable_ingress_nginx_lb_lookup ? data.aws_lb.ingress_nginx[0].zone_id : null
+}
+
+# Pod Identity Agent addon outputs
+output "pod_identity_agent_addon_arn" {
+  description = "ARN of the EKS Pod Identity Agent addon"
+  value       = var.enable_pod_identity_agent ? aws_eks_addon.pod_identity_agent[0].arn : null
+}
+
+output "pod_identity_agent_addon_version" {
+  description = "Version of the EKS Pod Identity Agent addon"
+  value       = var.enable_pod_identity_agent ? aws_eks_addon.pod_identity_agent[0].addon_version : null
+}
+
+output "pod_identity_agent_addon_name" {
+  description = "Name of the EKS Pod Identity Agent addon"
+  value       = var.enable_pod_identity_agent ? aws_eks_addon.pod_identity_agent[0].addon_name : null
+}
+
+#################################################################################
+# AWS Load Balancer Controller Outputs
+#################################################################################
+
+output "alb_controller_role_arn" {
+  description = "ARN of the AWS Load Balancer Controller IAM role"
+  value       = var.enable_alb_controller ? aws_iam_role.alb_controller_role[0].arn : null
+}
+
+output "alb_controller_role_name" {
+  description = "Name of the AWS Load Balancer Controller IAM role"
+  value       = var.enable_alb_controller ? aws_iam_role.alb_controller_role[0].name : null
+}
+
+output "alb_controller_policy_arn" {
+  description = "ARN of the AWS Load Balancer Controller IAM policy"
+  value       = var.enable_alb_controller && var.alb_controller_policy_arn == "" ? aws_iam_policy.alb_controller_policy[0].arn : var.alb_controller_policy_arn
+}
+
+output "alb_controller_pod_identity_association_arn" {
+  description = "ARN of the AWS Load Balancer Controller Pod Identity Association"
+  value       = var.enable_alb_controller ? aws_eks_pod_identity_association.alb_controller[0].association_arn : null
+}
+
+output "alb_controller_namespace" {
+  description = "Namespace for AWS Load Balancer Controller"
+  value       = var.enable_alb_controller ? var.alb_controller_namespace : null
+}
+
+# AI Gateway ALB Outputs
+output "ai_gateway_alb_arn" {
+  description = "ARN of the AI Gateway ALB (created by AWS Load Balancer Controller)"
+  value       = try(data.aws_lb.ai_gateway_alb[0].arn, null)
+}
+
+output "ai_gateway_alb_dns_name" {
+  description = "DNS name of the AI Gateway ALB"
+  value       = try(data.aws_lb.ai_gateway_alb[0].dns_name, null)
+}
+
+output "ai_gateway_alb_zone_id" {
+  description = "Zone ID of the AI Gateway ALB"
+  value       = try(data.aws_lb.ai_gateway_alb[0].zone_id, null)
 } 

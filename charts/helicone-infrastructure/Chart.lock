@@ -1,6 +1,15 @@
 dependencies:
-- name: external-secrets
-  repository: https://charts.external-secrets.io
-  version: 0.9.19
-digest: sha256:7ebd7804637f65cb4dc15efe3ce32e6428d63b6c41e6e6ffa9448edc65bf9797
-generated: "2025-06-29T21:19:29.271807-07:00"
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 27.28.1
+- name: tempo
+  repository: https://grafana.github.io/helm-charts
+  version: 1.23.2
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.129.0
+- name: aws-load-balancer-controller
+  repository: https://aws.github.io/eks-charts
+  version: 1.8.4
+digest: sha256:4190c60a1e81a50a7830fd621b3c5ff9eb15d92c149fde514023939850142e8d
+generated: "2025-07-27T21:40:48.429704-07:00"

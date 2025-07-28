@@ -7,13 +7,13 @@ cluster_name = "helicone"
 
 # Node Configuration
 node_instance_types = ["t3.large"]
-node_desired_size    = 2
-node_min_size        = 1
-node_max_size        = 3
+node_desired_size    = 4
+node_min_size        = 2
+node_max_size        = 6
 
 # Domain Configuration (for ACM certificates only)
-# Enable helicone-test.com domain ACM certificate (set to false to disable)
-enable_helicone_test_domain = true
+# Enable/disable helicone-test.com ACM certificate
+# enable_helicone_test_domain = false
 
 # Common tags
 tags = {
@@ -29,19 +29,31 @@ tags = {
 # Enable aws-auth ConfigMap management
 manage_aws_auth = true
 
-# Additional roles to add to aws-auth (e.g., GitHub Actions role)
-# Example: This would typically be populated by referencing the github-secrets module output
+# Additional roles to add to aws-auth (GitHub Actions role for secrets sync)
 additional_aws_auth_roles = [
-  # {
-  #   rolearn  = "arn:aws:iam::123456789012:role/helicone-github-actions-secrets-sync"
-  #   username = "github-actions-secrets-sync"
-  #   groups   = ["system:masters"]
-  # }
+  {
+    rolearn  = "arn:aws:iam::ACCOUNT:role/github-actions-role"
+    username = "github-actions"
+    groups   = ["system:masters"]
+  },
 ]
 
 # Additional users to add to aws-auth (if needed)
-additional_aws_auth_users = []
+additional_aws_auth_users = [
+  {
+    userarn  = "arn:aws:iam::ACCOUNT:user/admin-user"
+    username = "admin-user"
+    groups   = ["system:masters"]
+  }
+]
 
-# Load balancer lookup configuration
-# Set to true after the ingress-nginx controller is deployed to enable zone ID lookup
-enable_ingress_nginx_lb_lookup = false 
+# Enable ingress-nginx load balancer lookup (set to true after ingress controller is deployed)
+enable_ingress_nginx_lb_lookup = false
+
+#################################################################################
+# EKS Addons Configuration
+#################################################################################
+
+# Enable EKS Pod Identity Agent addon (required for pod identity authentication)
+enable_pod_identity_agent = true
+pod_identity_agent_version = "v1.0.0-eksbuild.1" 

@@ -234,6 +234,20 @@ data "aws_lb" "ingress_nginx" {
   ]
 }
 
+# Data source for AI Gateway ALB (created by AWS Load Balancer Controller)
+data "aws_lb" "ai_gateway_alb" {
+  count = var.enable_alb_controller ? 1 : 0
+  
+  tags = {
+    "kubernetes.io/ingress-name" = "helicone-ai-gateway"
+    "kubernetes.io/ingress-namespace" = "helicone-ai-gateway-cloud"
+  }
+  
+  depends_on = [
+    aws_eks_pod_identity_association.alb_controller
+  ]
+}
+
 #################################################################################
 # EKS aws-auth ConfigMap for additional role access
 #################################################################################

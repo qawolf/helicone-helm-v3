@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "helicone.fullname" . }}-loki
+  name: loki
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
     component: loki

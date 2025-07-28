@@ -1,1 +1,0 @@
-This represents the Helm chart for all monitoring related tasks.
