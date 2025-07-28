@@ -24,13 +24,23 @@ output "accelerator_ip_sets" {
 }
 
 output "tcp_listener_arn" {
-  description = "ARN of the TCP listener"
+  description = "ARN of the TCP listener (HTTPS)"
   value       = aws_globalaccelerator_listener.tcp_listener.id
 }
 
+output "tcp_listener_arn_http" {
+  description = "ARN of the TCP listener (HTTP)"
+  value       = aws_globalaccelerator_listener.tcp_listener_http.id
+}
+
 output "endpoint_group_arns" {
-  description = "Map of region to endpoint group ARN"
+  description = "Map of region to endpoint group ARN (HTTPS)"
   value       = { for region, group in aws_globalaccelerator_endpoint_group.endpoint_groups : region => group.id }
+}
+
+output "endpoint_group_arns_http" {
+  description = "Map of region to endpoint group ARN (HTTP)"
+  value       = { for region, group in aws_globalaccelerator_endpoint_group.endpoint_groups_http : region => group.id }
 }
 
 output "accelerator_name" {

@@ -98,7 +98,7 @@ variable "health_check_interval_seconds" {
 variable "health_check_path" {
   description = "The path for health checks"
   type        = string
-  default     = "/"
+  default     = "/health"
 }
 
 variable "health_check_protocol" {
