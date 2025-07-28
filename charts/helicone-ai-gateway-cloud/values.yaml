@@ -3,7 +3,8 @@ aiGateway:
   image:
     repository: helicone/ai-gateway
     pullPolicy: IfNotPresent
-    tag: "sha-90af8c4"
+    #tag: "sha-90af8c4"
+    tag: "sha-72280bd"
   replicaCount: 2
 
   # EKS Pod Identity Service Account Configuration
@@ -147,4 +148,5 @@ aiGateway:
       type: redis
       host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
 
-    deployment-target: cloud
+    deployment-target:
+      type: cloud
