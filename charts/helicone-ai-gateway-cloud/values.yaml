@@ -113,7 +113,8 @@ aiGateway:
     telemetry:
       level: "info,ai_gateway=trace"
       format: "compact"
-      exporter: stdout
+      exporter: both
+      otlp-endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317/v1/metrics"
 
     helicone:
       features: all

@@ -8,7 +8,7 @@
 {{- end }}
 
 {{- define "helicone.ai-gateway.name" -}}
-{{ include "helicone.name" . }}-ai-gateway
+{{ include "helicone.name" . }}
 {{- end }}
 
 {{/*

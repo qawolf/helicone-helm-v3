@@ -10,10 +10,6 @@ fullnameOverride: "infra"
 # Global configuration
 global: {}
 
-# Dependency management configuration
-dependencyChecks:
-  enabled: true
-
 # Cluster Autoscaler configuration
 clusterAutoscaler:
   enabled: false # Disabled to avoid conflicts with existing installation
