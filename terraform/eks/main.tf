@@ -2,6 +2,32 @@ provider "aws" {
   region = var.region
 }
 
+# Configure Kubernetes Provider for EKS
+provider "kubernetes" {
+  host                   = aws_eks_cluster.eks_cluster.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.eks_cluster.certificate_authority[0].data)
+  
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.eks_cluster.name, "--region", var.region]
+  }
+}
+
+# Configure Helm Provider for EKS  
+provider "helm" {
+  kubernetes {
+    host                   = aws_eks_cluster.eks_cluster.endpoint
+    cluster_ca_certificate = base64decode(aws_eks_cluster.eks_cluster.certificate_authority[0].data)
+    
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.eks_cluster.name, "--region", var.region]
+    }
+  }
+}
+
 # Data source for availability zones
 data "aws_availability_zones" "available" {
   state = "available"
@@ -235,8 +261,9 @@ data "aws_lb" "ingress_nginx" {
 }
 
 # Data source for AI Gateway ALB (created by AWS Load Balancer Controller)
+# Note: This will only work after the Helm chart creates the Ingress resource
 data "aws_lb" "ai_gateway_alb" {
-  count = var.enable_alb_controller ? 1 : 0
+  count = 0  # Disabled until AI Gateway Ingress is deployed
   
   tags = {
     "kubernetes.io/ingress-name" = "helicone-ai-gateway"
@@ -269,12 +296,7 @@ resource "kubernetes_config_map_v1" "aws_auth" {
         username = "system:node:{{EC2PrivateDNSName}}"
         groups   = ["system:bootstrappers", "system:nodes"]
       }],
-      # Cluster autoscaler role (if enabled)
-      var.enable_cluster_autoscaler ? [{
-        rolearn  = aws_iam_role.cluster_autoscaler[0].arn
-        username = "cluster-autoscaler"
-        groups   = ["system:cluster-autoscaler"]
-      }] : [],
+          # Cluster autoscaler role removed - now managed by Helm chart
       # EBS CSI driver role (if enabled)
       var.enable_ebs_csi_driver ? [{
         rolearn  = aws_iam_role.ebs_csi_driver[0].arn

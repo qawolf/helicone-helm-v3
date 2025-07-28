@@ -104,6 +104,11 @@ output "cluster_autoscaler_role_arn" {
   value       = var.enable_cluster_autoscaler ? aws_iam_role.cluster_autoscaler[0].arn : null
 }
 
+output "cluster_autoscaler_pod_identity_association_arn" {
+  description = "ARN of the EKS Pod Identity Association for cluster autoscaler"
+  value       = var.enable_cluster_autoscaler ? aws_eks_pod_identity_association.cluster_autoscaler[0].association_arn : null
+}
+
 output "kubectl_config" {
   description = "kubectl config command to update local kubeconfig"
   value       = "aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.eks_cluster.name}"

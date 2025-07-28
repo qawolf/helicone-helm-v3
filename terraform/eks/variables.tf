@@ -119,15 +119,15 @@ variable "ebs_csi_driver_policy_arn" {
 }
 
 variable "enable_cluster_autoscaler" {
-  description = "Enable cluster autoscaler"
+  description = "Enable cluster autoscaler IAM resources (Kubernetes resources managed by Helm)"
   type        = bool
   default     = true
 }
 
 variable "cluster_autoscaler_policy_arn" {
-  description = "ARN of the cluster autoscaler IAM policy"
+  description = "ARN of the cluster autoscaler IAM policy (optional, will be created if not provided)"
   type        = string
-  default     = ""  # Will be created if not provided
+  default     = ""
 }
 
 variable "tags" {
