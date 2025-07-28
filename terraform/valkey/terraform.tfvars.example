@@ -1,54 +1,39 @@
-# AWS Configuration
-aws_region = "us-east-1"
+# Valkey ElastiCache Serverless Configuration
+aws_region         = "us-west-2"
+valkey_cache_name  = "helicone-valkey-cache"
 
-# Project Configuration
-project_name = "helicone"
-environment  = "production"
+# Capacity and performance settings
+max_storage_gb      = 5
+max_ecpu_per_second = 5000
 
-# Common Tags
-common_tags = {
-  Project     = "helicone"
-  Environment = "production"
-  ManagedBy   = "terraform"
-  Team        = "platform"
-}
+# Snapshot settings
+daily_snapshot_time      = "05:00"
+snapshot_retention_limit = 7
 
-# Valkey Cache Configuration
-valkey_cache_name        = "helicone-valkey-cache"
-engine                   = "valkey"
-description              = "Helicone Valkey serverless cache for high-performance data storage"
+# Network configuration
+create_subnet_group = true
+# vpc_id = "vpc-xxxxxxxxx"  # Optional: specify VPC ID
+# subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # Optional: specify subnet IDs
 
-# Capacity Configuration
-max_storage_gb           = 1      # Start small, can scale up to 5000 GB
-max_ecpu_per_second     = 1000   # Start with minimum, can scale up to 15M
-
-# Snapshot Configuration
-snapshot_retention_limit = 1
-daily_snapshot_time     = "03:00"  # UTC time in HH:MM format
-
-# Network Configuration
-create_subnet_group      = true
-create_security_group    = true
-
-# VPC Configuration (leave empty to use default VPC)
-vpc_id     = ""
-subnet_ids = []
-
-# Security groups allowed to access the cache (typically ECS cluster)
+# Security groups that should have access (EKS node groups, etc.)
 allowed_security_group_ids = [
-  "sg-0123456789abcdef0",  # Replace with your ECS cluster security group ID
-  # Add any additional security group IDs that should have access to the cache
-  # "sg-0987654321fedcba0"  # Example: Management/bastion host security group
+  # "sg-xxxxxxxxx"  # Add your EKS cluster security group here
 ]
 
-# ECS-Only VPC Setup (Recommended for production):
-# Use the same VPC and private subnets as your ECS cluster
-# vpc_id = "vpc-0123456789abcdef0"  # Same VPC as ECS cluster
-# subnet_ids = [
-#   "subnet-0123456789abcdef0",  # Private subnet 1 (same AZ as ECS tasks)
-#   "subnet-0123456789abcdef1",  # Private subnet 2 (different AZ for HA)
-#   "subnet-0123456789abcdef2"   # Private subnet 3 (optional third AZ)
-# ]
+# CIDR blocks that should have access (if needed)
+allowed_cidr_blocks = [
+  # "10.0.0.0/16"  # Add your VPC CIDR or specific networks
+]
 
-# To find your ECS security group ID:
-# aws ecs describe-services --cluster your-cluster-name --services your-service-name --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' 
+# EKS Pod Identity Configuration (REQUIRED for pod identity)
+eks_cluster_name                  = "helicone"                    # Must match your EKS cluster name
+kubernetes_namespace              = "default"                    # Namespace where your pods run
+kubernetes_service_account_name   = "helicone-ai-gateway"        # Service account name from Helm chart
+
+# Common tags
+common_tags = {
+  Project     = "Helicone"
+  Environment = "production"
+  ManagedBy   = "Terraform"
+  Component   = "Cache"
+} 

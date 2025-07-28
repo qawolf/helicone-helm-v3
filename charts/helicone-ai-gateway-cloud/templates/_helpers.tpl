@@ -12,6 +12,17 @@
 {{- end }}
 
 {{/*
+Service Account name
+*/}}
+{{- define "helicone.ai-gateway.serviceAccountName" -}}
+{{- if .Values.aiGateway.serviceAccount.enabled }}
+{{- .Values.aiGateway.serviceAccount.name | default (include "helicone.ai-gateway.name" .) }}
+{{- else }}
+{{- "default" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "helicone.ai-gateway.selectorLabels" -}}
@@ -47,7 +58,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{- define "helicone.ai-gateway.env" -}}
-
 - name: AI_GATEWAY__DATABASE__URL
   valueFrom:
     secretKeyRef:

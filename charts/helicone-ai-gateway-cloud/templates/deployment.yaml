@@ -26,7 +26,14 @@ spec:
     metadata:
       labels:
         {{- include "helicone.ai-gateway.selectorLabels" . | nindent 8 }}
+      {{- if .Values.aiGateway.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.aiGateway.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
+      {{- if .Values.aiGateway.serviceAccount.enabled }}
+      serviceAccountName: {{ include "helicone.ai-gateway.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: helicone-ai-gateway
           image: "{{ .Values.aiGateway.image.repository }}:{{ .Values.aiGateway.image.tag }}"

@@ -209,4 +209,19 @@ resource "aws_eks_addon" "ebs_csi_driver" {
   depends_on = [
     aws_eks_node_group.eks_nodes
   ]
+}
+
+# EKS Pod Identity Agent addon
+resource "aws_eks_addon" "pod_identity_agent" {
+  count             = var.enable_pod_identity_agent ? 1 : 0
+  cluster_name      = aws_eks_cluster.eks_cluster.name
+  addon_name        = "eks-pod-identity-agent"
+  resolve_conflicts = "OVERWRITE"
+  addon_version     = var.pod_identity_agent_version
+
+  depends_on = [
+    aws_eks_node_group.eks_nodes
+  ]
+
+  tags = var.tags
 } 

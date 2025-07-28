@@ -6,6 +6,28 @@ aiGateway:
     tag: "sha-90af8c4"
   replicaCount: 2
 
+  # EKS Pod Identity Service Account Configuration
+  serviceAccount:
+    enabled: true
+    # Name of the service account (defaults to chart name if not specified)
+    name: "helicone-ai-gateway"
+    # IAM role ARN for EKS Pod Identity
+    # This should be set to the IAM role that has permissions to access ElastiCache
+    roleArn: "arn:aws:iam::849596434884:role/helicone-valkey-cache-pod-identity-role"
+    # Additional annotations for the service account
+    annotations: {}
+
+  # Pod annotations (useful for pod identity debugging)
+  podAnnotations: {}
+
+  # # Valkey/ElastiCache configuration for dynamic connection
+  # valkey:
+  #   # Set these values to use dynamic configuration instead of hardcoded URLs
+  #   # When endpoint is provided, it overrides the hardcoded config values
+  #   endpoint: "" # e.g., "helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com"
+  #   port: 6379
+  #   tls: true # Set to true for ElastiCache serverless which uses TLS
+
   # TODO: add canaries or blue-green
   # Rolling Update Deployment Strategy
   strategy:
@@ -101,6 +123,8 @@ aiGateway:
       region: "us-west-2"
       host: "https://s3.us-west-2.amazonaws.com"
 
+    # Legacy static configuration (kept for backward compatibility)
+    # When valkey.endpoint is set above, these values are overridden
     cache-store:
       type: redis
       host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
