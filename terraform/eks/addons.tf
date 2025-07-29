@@ -515,8 +515,109 @@ resource "aws_eks_pod_identity_association" "alb_controller" {
   count           = var.enable_alb_controller ? 1 : 0
   cluster_name    = aws_eks_cluster.eks_cluster.name
   namespace       = var.alb_controller_namespace
-  service_account = "aws-load-balancer-controller"
+  service_account = "helicone-infrastructure-aws-load-balancer-controller"  # Fixed to match actual service account
   role_arn        = aws_iam_role.alb_controller_role[0].arn
+
+  tags = var.tags
+}
+
+#################################################################################
+# NGINX Ingress Controller IAM Resources for Pod Identity
+#################################################################################
+
+# NGINX Ingress Controller IAM Policy (for creating LoadBalancers)
+resource "aws_iam_policy" "nginx_ingress_controller_policy" {
+  count       = var.enable_nginx_ingress_controller ? 1 : 0
+  name        = "${var.cluster_name}-nginx-ingress-controller-policy"
+  description = "IAM policy for NGINX Ingress Controller LoadBalancer creation"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeLoadBalancerAttributes",
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeTargetGroupAttributes",
+          "elasticloadbalancing:DescribeTargetHealth",
+          "elasticloadbalancing:DescribeTags",
+          "elasticloadbalancing:CreateLoadBalancer",
+          "elasticloadbalancing:CreateTargetGroup",
+          "elasticloadbalancing:CreateListener",
+          "elasticloadbalancing:ModifyLoadBalancerAttributes",
+          "elasticloadbalancing:ModifyTargetGroup",
+          "elasticloadbalancing:ModifyTargetGroupAttributes",
+          "elasticloadbalancing:DeleteLoadBalancer",
+          "elasticloadbalancing:DeleteTargetGroup",
+          "elasticloadbalancing:DeleteListener",
+          "elasticloadbalancing:RegisterTargets",
+          "elasticloadbalancing:DeregisterTargets",
+          "elasticloadbalancing:AddTags",
+          "elasticloadbalancing:RemoveTags"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeInstances",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DescribeInternetGateways",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeAccountAttributes",
+          "ec2:DescribeAddresses",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+# NGINX Ingress Controller IAM Role for Pod Identity
+resource "aws_iam_role" "nginx_ingress_controller_role" {
+  count = var.enable_nginx_ingress_controller ? 1 : 0
+  name  = "${var.cluster_name}-nginx-ingress-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
+      }
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
+  })
+
+  tags = var.tags
+}
+
+# Attach the IAM policy to the NGINX Ingress Controller role
+resource "aws_iam_role_policy_attachment" "nginx_ingress_controller_policy" {
+  count      = var.enable_nginx_ingress_controller ? 1 : 0
+  policy_arn = aws_iam_policy.nginx_ingress_controller_policy[0].arn
+  role       = aws_iam_role.nginx_ingress_controller_role[0].name
+}
+
+# EKS Pod Identity Association for NGINX Ingress Controller
+resource "aws_eks_pod_identity_association" "nginx_ingress_controller" {
+  count           = var.enable_nginx_ingress_controller ? 1 : 0
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  namespace       = var.nginx_ingress_controller_namespace
+  service_account = "nginx-ingress-controller"  # This should be correct based on our values.yaml
+  role_arn        = aws_iam_role.nginx_ingress_controller_role[0].arn
 
   tags = var.tags
 } 
