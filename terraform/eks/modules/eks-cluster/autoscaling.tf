@@ -5,7 +5,7 @@
 # Cluster Autoscaler IAM Policy
 resource "aws_iam_policy" "cluster_autoscaler" {
   count       = var.enable_cluster_autoscaler && var.cluster_autoscaler_policy_arn == "" ? 1 : 0
-  name        = "${var.cluster_name}-cluster-autoscaler-policy"
+  name        = "${var.cluster_name}-${var.region}-cluster-autoscaler-policy"
   description = "IAM policy for Cluster Autoscaler"
 
   policy = jsonencode({
@@ -44,7 +44,7 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 # Cluster Autoscaler IAM Role for EKS Pod Identity
 resource "aws_iam_role" "cluster_autoscaler" {
   count = var.enable_cluster_autoscaler ? 1 : 0
-  name  = "${var.cluster_name}-cluster-autoscaler-role"
+  name  = "${var.cluster_name}-${var.region}-cluster-autoscaler-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

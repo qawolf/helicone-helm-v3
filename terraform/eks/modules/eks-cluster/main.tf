@@ -5,7 +5,7 @@ data "aws_availability_zones" "available" {
 
 # EKS Cluster IAM Role
 resource "aws_iam_role" "eks_cluster_role" {
-  name = "${var.cluster_name}-cluster-role"
+  name = "${var.cluster_name}-${var.region}-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -19,7 +19,7 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 
   tags = merge(var.tags, {
-    Name = "${var.cluster_name}-cluster-role"
+    Name = "${var.cluster_name}-${var.region}-cluster-role"
   })
 }
 
@@ -115,7 +115,7 @@ resource "aws_kms_alias" "eks" {
 
 # IAM Role for Node Group
 resource "aws_iam_role" "eks_node_role" {
-  name = "${var.cluster_name}-node-role"
+  name = "${var.cluster_name}-${var.region}-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -129,7 +129,7 @@ resource "aws_iam_role" "eks_node_role" {
   })
 
   tags = merge(var.tags, {
-    Name = "${var.cluster_name}-node-role"
+    Name = "${var.cluster_name}-${var.region}-node-role"
   })
 }
 
@@ -156,7 +156,7 @@ resource "aws_iam_role_policy_attachment" "eks_ebs_csi_driver_policy" {
 
 # Additional policy for EKS nodes to create LoadBalancers
 resource "aws_iam_policy" "eks_node_loadbalancer_policy" {
-  name        = "${var.cluster_name}-node-loadbalancer-policy"
+      name        = "${var.cluster_name}-${var.region}-node-loadbalancer-policy"
   description = "IAM policy for EKS nodes to create LoadBalancers"
 
   policy = jsonencode({
