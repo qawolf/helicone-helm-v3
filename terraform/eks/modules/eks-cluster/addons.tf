@@ -176,14 +176,16 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name             = aws_eks_cluster.eks_cluster.name
   addon_name               = "vpc-cni"
-  resolve_conflicts        = "OVERWRITE"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
   addon_version            = var.vpc_cni_version
 }
 
 resource "aws_eks_addon" "coredns" {
   cluster_name             = aws_eks_cluster.eks_cluster.name
   addon_name               = "coredns"
-  resolve_conflicts        = "OVERWRITE"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
   addon_version            = var.coredns_version
   
   depends_on = [
@@ -194,7 +196,8 @@ resource "aws_eks_addon" "coredns" {
 resource "aws_eks_addon" "kube_proxy" {
   cluster_name             = aws_eks_cluster.eks_cluster.name
   addon_name               = "kube-proxy"
-  resolve_conflicts        = "OVERWRITE"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
   addon_version            = var.kube_proxy_version
 }
 
@@ -202,7 +205,8 @@ resource "aws_eks_addon" "ebs_csi_driver" {
   count                    = var.enable_ebs_csi_driver ? 1 : 0
   cluster_name             = aws_eks_cluster.eks_cluster.name
   addon_name               = "aws-ebs-csi-driver"
-  resolve_conflicts        = "OVERWRITE"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
   addon_version            = var.ebs_csi_driver_version
   service_account_role_arn = aws_iam_role.ebs_csi_driver[0].arn
 
@@ -216,7 +220,8 @@ resource "aws_eks_addon" "pod_identity_agent" {
   count             = var.enable_pod_identity_agent ? 1 : 0
   cluster_name      = aws_eks_cluster.eks_cluster.name
   addon_name        = "eks-pod-identity-agent"
-  resolve_conflicts = "OVERWRITE"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
   addon_version     = var.pod_identity_agent_version
 
   depends_on = [
