@@ -33,8 +33,9 @@ resource "aws_iam_policy" "ai_gateway_iam_policy" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
+    Statement = concat(
+      # ElastiCache permissions - only if valkey_cache_arn is provided
+      var.valkey_cache_arn != "" ? [{
         Effect = "Allow"
         Action = [
           "elasticache:DescribeCacheClusters",
@@ -45,8 +46,9 @@ resource "aws_iam_policy" "ai_gateway_iam_policy" {
         Resource = [
           var.valkey_cache_arn
         ]
-      },
-      {
+      }] : [],
+      # S3 object permissions
+      [{
         Effect = "Allow"
         Action = [
           "s3:GetObject",
@@ -55,8 +57,9 @@ resource "aws_iam_policy" "ai_gateway_iam_policy" {
         Resource = [
           "${var.s3_bucket_arn}/*"
         ]
-      },
-      {
+      }],
+      # S3 bucket permissions
+      [{
         Effect = "Allow"
         Action = [
           "s3:ListBucket"
@@ -64,8 +67,8 @@ resource "aws_iam_policy" "ai_gateway_iam_policy" {
         Resource = [
           var.s3_bucket_arn
         ]
-      }
-    ]
+      }]
+    )
   })
 
   tags = merge(var.tags, {

@@ -62,6 +62,13 @@ module "eks_us_west_2" {
   tags = merge(var.tags, {
     Region = "us-west-2"
   })
+
+  # Provider configuration
+  providers = {
+    aws        = aws.us-west-2
+    kubernetes = kubernetes.us-west-2
+    helm       = helm.us-west-2
+  }
 }
 
 # Module for us-east-1 EKS cluster
@@ -126,6 +133,13 @@ module "eks_us_east_1" {
   tags = merge(var.tags, {
     Region = "us-east-1"
   })
+
+  # Provider configuration
+  providers = {
+    aws        = aws.us-east-1
+    kubernetes = kubernetes.us-east-1
+    helm       = helm.us-east-1
+  }
 }
 
 # Provider configuration for us-west-2
