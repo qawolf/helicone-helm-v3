@@ -8,8 +8,5 @@ dependencies:
 - name: opentelemetry-collector
   repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   version: 0.129.0
-- name: aws-load-balancer-controller
-  repository: https://aws.github.io/eks-charts
-  version: 1.8.4
-digest: sha256:4190c60a1e81a50a7830fd621b3c5ff9eb15d92c149fde514023939850142e8d
-generated: "2025-07-27T21:40:48.429704-07:00"
+digest: sha256:f59d8fb03499922b9c73732e5e06738df8fd8ae326b33049ffdf04cf11e2aee8
+generated: "2025-07-29T13:26:21.842025-07:00"

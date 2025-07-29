@@ -8,6 +8,10 @@ metadata:
     k8s-app: cluster-autoscaler
   name: {{ .Values.clusterAutoscaler.serviceAccount.name }}
   namespace: kube-system
+  {{- if .Values.clusterAutoscaler.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml .Values.clusterAutoscaler.serviceAccount.annotations | nindent 4 }}
+  {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
