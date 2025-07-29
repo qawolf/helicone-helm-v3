@@ -1,0 +1,65 @@
+# US-West-2 specific values for AI Gateway Cloud deployment
+
+aiGateway:
+  # Service Account Configuration for us-west-2
+  serviceAccount:
+    enabled: true
+    name: "helicone-ai-gateway-us-west-2"
+    # Update this with the actual IAM role ARN for us-west-2
+    roleArn: "arn:aws:iam::849596434884:role/helicone-valkey-cache-pod-identity-role-us-west-2"
+    annotations: {}
+
+  # Ingress configuration for us-west-2
+  ingress:
+    enabled: true
+    className: "alb"
+    annotations:
+      # AWS Load Balancer Controller annotations for ALB
+      alb.ingress.kubernetes.io/load-balancer-name: "helicone-ai-gateway-alb-us-west-2"
+      alb.ingress.kubernetes.io/scheme: "internal"
+      alb.ingress.kubernetes.io/target-type: "ip"
+      alb.ingress.kubernetes.io/healthcheck-path: "/health"
+      alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+      alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+      alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+      alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+      alb.ingress.kubernetes.io/unhealthy-threshold-count: "5"
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/backend-protocol: "HTTP"
+      alb.ingress.kubernetes.io/group.name: "helicone-alb-group-us-west-2"
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
+      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300,routing.http2.enabled=true
+      alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=20
+      alb.ingress.kubernetes.io/tags: Environment=production,Purpose=GlobalAccelerator,Region=us-west-2
+    hosts:
+      - host: ai-gateway-us-west-2.helicone.ai
+        paths:
+          - path: /
+            pathType: Prefix
+
+  config:
+    telemetry:
+      level: "info,ai_gateway=trace"
+      format: "compact"
+      exporter: both
+      # Update with us-west-2 specific endpoint if needed
+      otlp-endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317/v1/metrics"
+
+    minio:
+      bucket-name: "request-response-storage-us-west-2"
+      region: "us-west-2"
+      host: "https://s3.us-west-2.amazonaws.com"
+
+    cache-store:
+      type: redis
+      # Update with us-west-2 specific ElastiCache endpoint
+      host-url: "rediss://helicone-valkey-cache-us-west-2.serverless.usw2.cache.amazonaws.com:6379"
+
+    rate-limit-store:
+      type: redis
+      # Update with us-west-2 specific ElastiCache endpoint
+      host-url: "rediss://helicone-valkey-cache-us-west-2.serverless.usw2.cache.amazonaws.com:6379"
+
+    deployment-target:
+      type: cloud
