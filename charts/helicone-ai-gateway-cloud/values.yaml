@@ -3,8 +3,7 @@ aiGateway:
   image:
     repository: helicone/ai-gateway
     pullPolicy: IfNotPresent
-    #tag: "sha-90af8c4"
-    tag: "sha-72280bd"
+    tag: "sha-485fd7c"
   replicaCount: 2
 
   # EKS Pod Identity Service Account Configuration
@@ -68,7 +67,7 @@ aiGateway:
       # Connection settings for LLM streaming - 5 minute idle timeout
       alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300,routing.http2.enabled=true
       # Target group settings with appropriate deregistration delay
-      alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=20
+      #alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=20
       # Tags for identification
       alb.ingress.kubernetes.io/tags: Environment=production,Purpose=GlobalAccelerator
     hosts:

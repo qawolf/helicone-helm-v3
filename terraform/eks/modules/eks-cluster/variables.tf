@@ -277,3 +277,14 @@ variable "cluster_autoscaler_policy_arn" {
   type        = string
   default     = ""
 }
+
+# AI Gateway Configuration
+variable "valkey_cache_arn" {
+  description = "ARN of the Valkey cache for AI Gateway"
+  type        = string
+}
+
+variable "s3_bucket_arn" {
+  description = "ARN of the S3 bucket for AI Gateway"
+  type        = string
+}

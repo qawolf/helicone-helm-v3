@@ -248,3 +248,25 @@ variable "nginx_ingress_controller_namespace" {
   type        = string
   default     = "helicone-infrastructure"
 }
+
+#################################################################################
+# AI Gateway Configuration
+#################################################################################
+
+variable "valkey_cache_arn" {
+  description = "ARN of the Valkey serverless cache"
+  type        = string
+  default     = ""
+}
+
+variable "s3_bucket_arn" {
+  description = "S3 bucket ARN for request-response storage"
+  type        = string
+  default     = "arn:aws:s3:::request-response-storage"
+}
+
+variable "common_tags" {
+  description = "Common tags to apply to resources"
+  type        = map(string)
+  default     = {}
+}

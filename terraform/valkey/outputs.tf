@@ -72,34 +72,3 @@ output "connection_string" {
   value       = "${aws_elasticache_serverless_cache.valkey.endpoint[0].address}:${aws_elasticache_serverless_cache.valkey.endpoint[0].port}"
   sensitive   = true
 }
-
-# Pod Identity related outputs
-output "pod_identity_role_arn" {
-  description = "ARN of the IAM role for EKS Pod Identity"
-  value       = aws_iam_role.valkey_pod_identity_role.arn
-}
-
-output "pod_identity_role_name" {
-  description = "Name of the IAM role for EKS Pod Identity"
-  value       = aws_iam_role.valkey_pod_identity_role.name
-}
-
-output "valkey_endpoint_for_helm" {
-  description = "Valkey endpoint for Helm chart configuration"
-  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].address
-}
-
-output "valkey_port_for_helm" {
-  description = "Valkey port for Helm chart configuration"
-  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].port
-}
-
-output "pod_identity_association_id" {
-  description = "ID of the EKS Pod Identity Association"
-  value       = var.eks_cluster_name != "" ? aws_eks_pod_identity_association.valkey_pod_identity[0].association_id : null
-}
-
-output "pod_identity_association_arn" {
-  description = "ARN of the EKS Pod Identity Association"
-  value       = var.eks_cluster_name != "" ? aws_eks_pod_identity_association.valkey_pod_identity[0].association_arn : null
-}
