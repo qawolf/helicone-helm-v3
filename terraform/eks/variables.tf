@@ -233,12 +233,6 @@ variable "alb_controller_namespace" {
   default     = "default"
 }
 
-variable "external_secrets_csi_driver_version" {
-  description = "External Secrets CSI driver version"
-  type        = string
-  default     = "v1.0.0-eksbuild.1"
-}
-
 #################################################################################
 # NGINX Ingress Controller Configuration
 #################################################################################
