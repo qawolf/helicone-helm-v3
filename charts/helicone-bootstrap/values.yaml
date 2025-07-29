@@ -20,13 +20,6 @@ clusterAutoscaler:
     - "--max-node-provision-time=15m"
     - "--scan-interval=10s"
 
-  # TODO cluster autoscaling should be decoupled from the bootstrap chart, so not sure why this is here
-  # TODO This hard coding is not correct
-  # otel:
-  #   endpoint: "http://otel-collector.helicone-observability.svc.cluster.local:4317"
-  #   headers: ""
-  #   protocol: "grpc"
-
 nginxIngressController:
   enabled: true
   fullnameOverride: "nginx-controller"
@@ -94,18 +87,12 @@ nginxIngressController:
 awsLoadBalancerController:
   enabled: true
 
-# AWS Load Balancer Controller subchart configuration
 aws-load-balancer-controller:
-  # Cluster name is required for the controller to work
-  clusterName: "helicone" # This should match your EKS cluster name
+  clusterName: "helicone"
 
-  # Service account configuration - MANAGED BY TERRAFORM
-  # Pod Identity association is managed by Terraform (terraform/eks/addons.tf)
-  # ServiceAccount creation and IAM role association handled automatically
   serviceAccount:
     create: true
     name: "aws-load-balancer-controller"
-    # No annotations needed for Pod Identity - association managed by Terraform
 
   # Controller configuration
   replicaCount: 2
@@ -120,13 +107,8 @@ aws-load-balancer-controller:
       memory: 200Mi
 
   # Enable webhook for cert-manager integration
+  # TODO ALB should have cert
   enableCertManager: false
-
-  # Region configuration (auto-detected from IMDS if not set)
-  region: ""
-
-  # VPC ID (auto-detected if not set)
-  vpcId: ""
 
   # Additional controller arguments
   additionalResourceTags: {}
@@ -136,7 +118,7 @@ aws-load-balancer-controller:
   createIngressClassResource: true
 
   # Enable shield, WAF, and WAFv2 (optional)
-  # TODO Enable these to support WAF
+  # TODO Enable these to support shield
   enableShield: false
   enableWaf: false
   enableWafv2: false
@@ -154,33 +136,6 @@ aws-load-balancer-controller:
     rollingUpdate:
       maxSurge: 1
 
-  # Node selector for pod assignment
-  nodeSelector: {}
-
-  # Tolerations for pod assignment
-  tolerations: []
-
-  # Affinity for pod assignment
-  affinity: {}
-
-  # Priority class name
-  priorityClassName: ""
-
-  # Pod labels
-  podLabels: {}
-
-  # Pod annotations
-  podAnnotations: {}
-
-  # Environment variables
-  env: []
-
-  # Volume mounts
-  volumeMounts: []
-
-  # Volumes
-  volumes: []
-
   # Liveness probe configuration
   livenessProbe:
     failureThreshold: 2
@@ -190,22 +145,3 @@ aws-load-balancer-controller:
       scheme: HTTP
     initialDelaySeconds: 30
     timeoutSeconds: 10
-
-  # Namespace to watch (empty = all namespaces)
-  watchNamespace: ""
-
-  # Default target type for ALBs (instance or ip)
-  defaultTargetType: instance
-
-  # Enable pod readiness gate inject
-  enablePodReadinessGateInject: true
-
-  # Enable endpoint slices
-  enableEndpointSlices: true
-
-  # Service monitor for Prometheus
-  serviceMonitor:
-    enabled: false
-    additionalLabels: {}
-    interval: 30s
-    namespace: ""
