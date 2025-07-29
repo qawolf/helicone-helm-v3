@@ -6,18 +6,12 @@ aiGateway:
     tag: "sha-485fd7c"
   replicaCount: 2
 
-  # EKS Pod Identity Service Account Configuration
   serviceAccount:
     enabled: true
-    # Name of the service account (defaults to chart name if not specified)
     name: "helicone-ai-gateway"
-    # IAM role ARN for EKS Pod Identity
-    # This should be set to the IAM role that has permissions to access ElastiCache
     roleArn: "arn:aws:iam::849596434884:role/helicone-valkey-cache-pod-identity-role"
-    # Additional annotations for the service account
     annotations: {}
 
-  # Pod annotations (useful for pod identity debugging)
   podAnnotations: {}
 
   # # Valkey/ElastiCache configuration for dynamic connection
@@ -47,7 +41,6 @@ aiGateway:
     enabled: true
     className: "alb"
     annotations:
-      # AWS Load Balancer Controller annotations for ALB
       alb.ingress.kubernetes.io/load-balancer-name: "helicone-ai-gateway-alb"
       alb.ingress.kubernetes.io/scheme: "internal"
       alb.ingress.kubernetes.io/target-type: "ip"
@@ -56,19 +49,13 @@ aiGateway:
       alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
       alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
       alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
-      # this must be at least 2
       alb.ingress.kubernetes.io/healthy-threshold-count: "2"
       alb.ingress.kubernetes.io/unhealthy-threshold-count: "5"
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-      # Additional recommended ALB annotations
       alb.ingress.kubernetes.io/backend-protocol: "HTTP"
-      alb.ingress.kubernetes.io/group.name: "helicone-alb-group" # Group multiple ingresses to same ALB
+      alb.ingress.kubernetes.io/group.name: "helicone-alb-group"
       alb.ingress.kubernetes.io/ssl-redirect: "443"
-      # Connection settings for LLM streaming - 5 minute idle timeout
       alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300,routing.http2.enabled=true
-      # Target group settings with appropriate deregistration delay
-      #alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=20
-      # Tags for identification
       alb.ingress.kubernetes.io/tags: Environment=production,Purpose=GlobalAccelerator
     hosts:
       - host: ai-gateway.helicone.ai

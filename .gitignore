@@ -20,9 +20,10 @@ override.tf.json
 values.yaml
 !charts/helicone-argocd/values.yaml
 !charts/helicone-core/values.yaml
-!charts/helicone-infrastructure/values.yaml
 !charts/helicone-ai-gateway/values.yaml
 !charts/helicone-ai-gateway-cloud/values.yaml
+!charts/helicone-bootstrap/values.yaml
+!charts/helicone-observability/values.yaml
 values.filevine.yaml
 .hcstate
 

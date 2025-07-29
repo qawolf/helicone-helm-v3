@@ -1,0 +1,147 @@
+################################################################################
+#
+#                     HELICONE BOOTSTRAP
+#
+################################################################################
+
+clusterAutoscaler:
+  enabled: true
+  image:
+    tag: "v1.30.0"
+  clusterName: "helicone"
+  serviceAccount:
+    create: true
+    name: "cluster-autoscaler"
+    # Note: No IAM role annotations needed - EKS Pod Identity handles this automatically
+    # The role association is managed by Terraform via aws_eks_pod_identity_association
+  extraArgs:
+    - "--scale-down-delay-after-add=10m"
+    - "--scale-down-unneeded-time=10m"
+    - "--max-node-provision-time=15m"
+    - "--scan-interval=10s"
+
+nginxIngressController:
+  enabled: true
+  fullnameOverride: "nginx-controller"
+
+  # Set to false if you have an existing nginx-ingress-controller that conflicts
+  # This will skip creating nginx resources to avoid ownership conflicts
+  skipExistingResources: false
+
+  watchIngressWithoutClass: true
+  watchNamespaces: "" # Empty string means watch all namespaces
+
+  # Controller configuration
+  controller:
+    image:
+      repository: registry.k8s.io/ingress-nginx/controller
+      tag: "v1.8.2"
+      pullPolicy: IfNotPresent
+
+    # Enable cross-namespace ingress support
+    extraArgs:
+      - "--watch-ingress-without-class=true"
+      - "--ingress-class=nginx"
+      - "--enable-ssl-passthrough"
+
+    # Resource configuration
+    resources:
+      requests:
+        cpu: 100m
+        memory: 90Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Service configuration - Using Pod Identity
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+        service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+        # Pod Identity handles authentication automatically - no more manual annotations needed
+      ports:
+        http: 80
+        https: 443
+
+    # Ingress class configuration
+    ingressClass:
+      name: nginx
+      enabled: true
+      default: true # Keep nginx as default for existing ingresses
+      controllerValue: "k8s.io/ingress-nginx"
+
+    # RBAC configuration for cross-namespace access
+    rbac:
+      create: true
+      scope: true # Cluster-wide scope for all namespaces
+
+    # Service account - IMPORTANT: Must match Terraform Pod Identity association
+    serviceAccount:
+      create: true
+      name: nginx-ingress-controller # This matches the Pod Identity association
+
+# AWS Load Balancer Controller configuration
+# TODO DRY up between awsLoadBalancerController and aws-load-balancer-controller
+awsLoadBalancerController:
+  enabled: true
+
+aws-load-balancer-controller:
+  clusterName: "helicone"
+
+  serviceAccount:
+    create: true
+    name: "aws-load-balancer-controller"
+
+  # Controller configuration
+  replicaCount: 2
+
+  # Resources
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  # Enable webhook for cert-manager integration
+  # TODO ALB should have cert
+  enableCertManager: false
+
+  # Additional controller arguments
+  additionalResourceTags: {}
+
+  # Default ingress class
+  ingressClass: alb
+  createIngressClassResource: true
+
+  # Enable shield, WAF, and WAFv2 (optional)
+  # TODO Enable these to support shield
+  enableShield: false
+  enableWaf: false
+  enableWafv2: false
+
+  # Log level
+  logLevel: info
+
+  # Pod disruption budget
+  podDisruptionBudget:
+    maxUnavailable: 1
+
+  # Update strategy
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+
+  # Liveness probe configuration
+  livenessProbe:
+    failureThreshold: 2
+    httpGet:
+      path: /healthz
+      port: 61779
+      scheme: HTTP
+    initialDelaySeconds: 30
+    timeoutSeconds: 10

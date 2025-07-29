@@ -1,0 +1,1 @@
+This deployment bootstraps helicone by configuring autoscaling and ingress controller resources
