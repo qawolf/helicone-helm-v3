@@ -1,6 +1,6 @@
 apiVersion: v2
 name: helicone-infrastructure
-description: Helicone Infrastructure Components - Cluster Autoscaler, Beyla, External Secrets, AWS NLB Controller
+description: Helicone Infrastructure Components - Cluster Autoscaler, External Secrets, AWS NLB Controller
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

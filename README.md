@@ -70,7 +70,7 @@ Alternatively, you can install components individually:
    # Install AI Gateway component
    helm upgrade --install helicone-ai-gateway ./helicone-ai-gateway -f values.yaml
 
-   # Install infrastructure services (autoscaling, [Beyla](https://grafana.com/docs/beyla/latest/))
+   # Install infrastructure services (autoscaling, loki, nginx ingress controller)
    helm upgrade --install helicone-infrastructure ./helicone-infrastructure -f values.yaml
 
    # Install monitoring stack (Grafana, Prometheus)
