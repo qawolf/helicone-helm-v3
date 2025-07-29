@@ -84,16 +84,3 @@ resource "aws_elasticache_serverless_cache" "valkey" {
     Name = var.valkey_cache_name
   })
 }
-
-# EKS Pod Identity Association (only create if cluster name is provided)
-resource "aws_eks_pod_identity_association" "valkey_pod_identity" {
-  count           = var.eks_cluster_name != "" ? 1 : 0
-  cluster_name    = var.eks_cluster_name
-  namespace       = var.kubernetes_namespace
-  service_account = var.kubernetes_service_account_name
-  role_arn        = aws_iam_role.valkey_pod_identity_role.arn
-
-  tags = merge(var.common_tags, {
-    Name = "${var.valkey_cache_name}-pod-identity-association"
-  })
-} 

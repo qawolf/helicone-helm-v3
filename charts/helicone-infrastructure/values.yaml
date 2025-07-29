@@ -382,6 +382,10 @@ aws-load-balancer-controller:
   # Service account configuration - MANAGED BY TERRAFORM
   # Pod Identity association is managed by Terraform (terraform/eks/addons.tf)
   # ServiceAccount creation and IAM role association handled automatically
+  serviceAccount:
+    create: true
+    name: "aws-load-balancer-controller"
+    # No annotations needed for Pod Identity - association managed by Terraform
 
   # Controller configuration
   replicaCount: 2
