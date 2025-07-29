@@ -41,21 +41,21 @@ variable "cloudflare_helicone_test_zone_id" {
   default     = ""
 }
 
-# EKS configuration (for remote state path)
-variable "eks_terraform_state_path" {
-  description = "Path to the EKS Terraform state file"
+# EKS load balancer hostname for DNS records
+variable "load_balancer_hostname" {
+  description = "The hostname of the EKS load balancer to point DNS records to"
   type        = string
-  default     = "../eks/terraform.tfstate"
+  default     = ""
 }
 
-variable "remote_state_backend" {
-  description = "Backend type for remote state (local, s3, remote, etc.)"
-  type        = string
-  default     = "local"
-}
-
-variable "remote_state_config" {
-  description = "Configuration for remote state backend"
-  type        = map(string)
-  default     = {}
+# ACM certificate validation options
+variable "certificate_validation_options" {
+  description = "List of certificate validation options from ACM certificate"
+  type = list(object({
+    domain_name           = string
+    resource_record_name  = string
+    resource_record_type  = string
+    resource_record_value = string
+  }))
+  default = []
 } 

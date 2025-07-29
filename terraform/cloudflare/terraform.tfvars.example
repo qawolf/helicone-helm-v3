@@ -15,26 +15,15 @@ cloudflare_helicone_ai_zone_name = "helicone.ai"
 cloudflare_helicone_ai_subdomain = "filevine"  # Change this to your desired subdomain
 create_helicone_ai_root_domain_record = false
 
+load_balancer_hostname = "your-eks-load-balancer-hostname.elb.amazonaws.com"
 
-
-# EKS Remote State Configuration
-# For local backend (default)
-eks_terraform_state_path = "../eks/terraform.tfstate"
-remote_state_backend = "local"
-
-# For S3 backend (uncomment and modify if using S3)
-# remote_state_backend = "s3"
-# remote_state_config = {
-#   bucket = "your-terraform-state-bucket"
-#   key    = "eks/terraform.tfstate"
-#   region = "us-west-2"
-# }
-
-# For remote backend (uncomment and modify if using Terraform Cloud)
-# remote_state_backend = "remote"
-# remote_state_config = {
-#   organization = "your-org"
-#   workspaces = {
-#     name = "eks-workspace"
+# Example format for certificate validation records:
+# certificate_validation_options = [
+#   {
+#     domain_name           = "filevine.helicone.ai"
+#     resource_record_name  = "_abc123.filevine.helicone.ai."
+#     resource_record_type  = "CNAME"
+#     resource_record_value = "_xyz789.acm-validations.aws."
 #   }
-# } 
+# ]
+certificate_validation_options = [] 
