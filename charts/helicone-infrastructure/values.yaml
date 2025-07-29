@@ -117,6 +117,7 @@ nginxIngressController:
       type: LoadBalancer # Back to LoadBalancer - Pod Identity should fix permissions
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-type: nlb
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing # Make NLB internet-facing
         service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
         # Pod Identity handles authentication automatically - no more manual annotations needed
       ports:
