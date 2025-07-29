@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 # IAM role for AI Gateway EKS Pod
 resource "aws_iam_role" "ai_gateway_pod_identity_role" {
-  name = "ai-gateway-pod-identity-role"
+  name = "${var.cluster_name}-ai-gateway-pod-identity-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,14 +21,14 @@ resource "aws_iam_role" "ai_gateway_pod_identity_role" {
     ]
   })
 
-  tags = merge(var.common_tags, {
+  tags = merge(var.tags, {
     Name = "ai-gateway-pod-identity-role"
   })
 }
 
 # IAM policy for ElastiCache and S3 access
 resource "aws_iam_policy" "ai_gateway_iam_policy" {
-  name        = "ai-gateway-iam-policy"
+  name        = "${var.cluster_name}-ai-gateway-iam-policy"
   description = "Policy for AI Gateway EKS Pod to access ElastiCache and S3"
 
   policy = jsonencode({
@@ -68,7 +68,7 @@ resource "aws_iam_policy" "ai_gateway_iam_policy" {
     ]
   })
 
-  tags = merge(var.common_tags, {
+  tags = merge(var.tags, {
     Name = "ai-gateway-iam-policy"
   })
 }
@@ -82,10 +82,10 @@ resource "aws_iam_role_policy_attachment" "gateway_policy_attachment" {
 # EKS Pod Identity Association for AI Gateway
 resource "aws_eks_pod_identity_association" "ai_gateway_association" {
   count           = 1
-  cluster_name    = aws_eks_cluster.eks_cluster.name
+  cluster_name    = var.cluster_name
   namespace       = var.alb_controller_namespace
   service_account = "helicone-ai-gateway"
-  role_arn        = aws_iam_role.ai_gateway_pod_identity_role[0].arn
+  role_arn        = aws_iam_role.ai_gateway_pod_identity_role.arn
 
   tags = var.tags
 }

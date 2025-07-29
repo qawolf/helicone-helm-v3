@@ -6,7 +6,7 @@ module "eks_us_west_2" {
   
   # AWS Configuration
   region       = "us-west-2"
-  cluster_name = "${var.cluster_name}-us-west-2"
+  cluster_name = "${var.cluster_name}"
   
   # VPC Configuration
   vpc_cidr             = "10.0.0.0/16"
@@ -54,6 +54,10 @@ module "eks_us_west_2" {
   enable_cluster_autoscaler        = var.enable_cluster_autoscaler
   cluster_autoscaler_policy_arn    = var.cluster_autoscaler_policy_arn
   
+  # AI Gateway Configuration
+  valkey_cache_arn = var.valkey_cache_arn
+  s3_bucket_arn    = var.s3_bucket_arn
+  
   # Tags
   tags = merge(var.tags, {
     Region = "us-west-2"
@@ -66,7 +70,7 @@ module "eks_us_east_1" {
   
   # AWS Configuration
   region       = "us-east-1"
-  cluster_name = "${var.cluster_name}-us-east-1"
+  cluster_name = "${var.cluster_name}"
   
   # VPC Configuration
   vpc_cidr             = "10.1.0.0/16"
@@ -113,6 +117,10 @@ module "eks_us_east_1" {
   # Cluster Autoscaler
   enable_cluster_autoscaler        = var.enable_cluster_autoscaler
   cluster_autoscaler_policy_arn    = var.cluster_autoscaler_policy_arn
+  
+  # AI Gateway Configuration
+  valkey_cache_arn = var.valkey_cache_arn
+  s3_bucket_arn    = var.s3_bucket_arn
   
   # Tags
   tags = merge(var.tags, {
