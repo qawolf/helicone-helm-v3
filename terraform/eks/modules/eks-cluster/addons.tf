@@ -1,7 +1,7 @@
 # EBS CSI Driver IAM Policy
 resource "aws_iam_policy" "ebs_csi_driver" {
   count       = var.enable_ebs_csi_driver && var.ebs_csi_driver_policy_arn == "" ? 1 : 0
-  name        = "${var.cluster_name}-ebs-csi-driver-policy"
+  name        = "${var.cluster_name}-${var.region}-ebs-csi-driver-policy"
   description = "IAM policy for EBS CSI Driver"
 
   policy = jsonencode({
@@ -144,7 +144,7 @@ resource "aws_iam_policy" "ebs_csi_driver" {
 # EBS CSI Driver IAM Role for Service Account
 resource "aws_iam_role" "ebs_csi_driver" {
   count = var.enable_ebs_csi_driver ? 1 : 0
-  name  = "${var.cluster_name}-ebs-csi-driver-role"
+  name  = "${var.cluster_name}-${var.region}-ebs-csi-driver-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -238,7 +238,7 @@ resource "aws_eks_addon" "pod_identity_agent" {
 # AWS Load Balancer Controller IAM Policy
 resource "aws_iam_policy" "alb_controller_policy" {
   count       = var.enable_alb_controller && var.alb_controller_policy_arn == "" ? 1 : 0
-  name        = "${var.cluster_name}-alb-controller-policy"
+  name        = "${var.cluster_name}-${var.region}-alb-controller-policy"
   description = "IAM policy for AWS Load Balancer Controller"
 
   policy = jsonencode({
@@ -489,7 +489,7 @@ resource "aws_iam_policy" "alb_controller_policy" {
 # AWS Load Balancer Controller IAM Role
 resource "aws_iam_role" "alb_controller_role" {
   count = var.enable_alb_controller ? 1 : 0
-  name  = "${var.cluster_name}-alb-controller-role"
+  name  = "${var.cluster_name}-${var.region}-alb-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -533,7 +533,7 @@ resource "aws_eks_pod_identity_association" "alb_controller" {
 # NGINX Ingress Controller IAM Policy (for creating LoadBalancers)
 resource "aws_iam_policy" "nginx_ingress_controller_policy" {
   count       = var.enable_nginx_ingress_controller ? 1 : 0
-  name        = "${var.cluster_name}-nginx-ingress-controller-policy"
+  name        = "${var.cluster_name}-${var.region}-nginx-ingress-controller-policy"
   description = "IAM policy for NGINX Ingress Controller LoadBalancer creation"
 
   policy = jsonencode({
@@ -590,7 +590,7 @@ resource "aws_iam_policy" "nginx_ingress_controller_policy" {
 # NGINX Ingress Controller IAM Role for Pod Identity
 resource "aws_iam_role" "nginx_ingress_controller_role" {
   count = var.enable_nginx_ingress_controller ? 1 : 0
-  name  = "${var.cluster_name}-nginx-ingress-controller-role"
+  name  = "${var.cluster_name}-${var.region}-nginx-ingress-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

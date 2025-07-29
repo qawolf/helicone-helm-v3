@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 # IAM role for AI Gateway EKS Pod
 resource "aws_iam_role" "ai_gateway_pod_identity_role" {
-  name = "${var.cluster_name}-ai-gateway-pod-identity-role"
+  name = "${var.cluster_name}-${var.region}-ai-gateway-pod-identity-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -28,7 +28,7 @@ resource "aws_iam_role" "ai_gateway_pod_identity_role" {
 
 # IAM policy for ElastiCache and S3 access
 resource "aws_iam_policy" "ai_gateway_iam_policy" {
-  name        = "${var.cluster_name}-ai-gateway-iam-policy"
+  name        = "${var.cluster_name}-${var.region}-ai-gateway-iam-policy"
   description = "Policy for AI Gateway EKS Pod to access ElastiCache and S3"
 
   policy = jsonencode({
