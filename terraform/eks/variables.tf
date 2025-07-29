@@ -233,19 +233,6 @@ variable "alb_controller_namespace" {
   default     = "default"
 }
 
-# External Secrets CSI Driver Configuration
-variable "enable_external_secrets_csi_driver" {
-  description = "Enable AWS Secrets Manager CSI driver"
-  type        = bool
-  default     = false
-}
-
-variable "external_secrets_csi_driver_policy_arn" {
-  description = "Custom IAM policy ARN for External Secrets CSI driver (leave empty to create)"
-  type        = string
-  default     = ""
-}
-
 variable "external_secrets_csi_driver_version" {
   description = "External Secrets CSI driver version"
   type        = string
