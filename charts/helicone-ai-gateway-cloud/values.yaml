@@ -9,18 +9,16 @@ aiGateway:
   serviceAccount:
     enabled: true
     name: "helicone-ai-gateway"
-    roleArn: "arn:aws:iam::849596434884:role/helicone-valkey-cache-pod-identity-role"
+    roleArn: "arn:aws:iam::849596434884:role/helicone-ai-gateway-pod-identity-role"
     annotations: {}
 
   podAnnotations: {}
 
-  # # Valkey/ElastiCache configuration for dynamic connection
-  # valkey:
-  #   # Set these values to use dynamic configuration instead of hardcoded URLs
-  #   # When endpoint is provided, it overrides the hardcoded config values
-  #   endpoint: "" # e.g., "helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com"
-  #   port: 6379
-  #   tls: true # Set to true for ElastiCache serverless which uses TLS
+  # TODO Transition to using memoryDB instead of ElastiCache
+  valkey:
+    endpoint: "helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+    port: 6379
+    tls: true
 
   # TODO: add canaries or blue-green
   # Rolling Update Deployment Strategy
@@ -29,13 +27,10 @@ aiGateway:
     rollingUpdate:
       maxUnavailable: 25%
       maxSurge: 25%
-
-  # Progress deadline for deployments (in seconds)
   progressDeadlineSeconds: 90
-
   service:
     annotations: {}
-    type: NodePort # ALB works with NodePort services
+    type: NodePort
     port: 8080
   ingress:
     enabled: true
