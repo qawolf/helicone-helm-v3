@@ -21,60 +21,11 @@ clusterAutoscaler:
     - "--max-node-provision-time=15m"
     - "--scan-interval=10s"
 
-# Beyla configuration for eBPF observability
-beyla:
-  enabled: false
-  image:
-    repository: grafana/beyla
-    tag: "v1.4.0"
-    pullPolicy: IfNotPresent
-
-  # Configuration for Beyla
-  config:
-    logLevel: info
-    services:
-      openPorts: "8080,3000,8000"
-      executableName: ""
-    routes:
-      unmatched: "heuristic"
-      patterns: []
-    tracing:
-      enabled: true
-      sampler:
-        name: "parentbased_traceidratio"
-        arg: "0.1"
-    metrics:
-      interval: "30s"
-      buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
-
-  # Security context for Beyla
-  securityContext:
-    privileged: false
-    capabilities:
-      sysAdmin: false
-
   # OpenTelemetry configuration
   otel:
     endpoint: "http://otel-collector.helicone-infrastructure.svc.cluster.local:4317"
     headers: ""
     protocol: "grpc"
-
-  # Additional environment variables for Beyla
-  extraEnvVars: {}
-
-  # Resource limits for Beyla sidecar
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "50m"
-    limits:
-      memory: "128Mi"
-      cpu: "100m"
-
-# Service Account configuration
-serviceAccount:
-  name: "beyla"
-  annotations: {}
 
 # Nginx Ingress Controller configuration
 nginxIngressController:
