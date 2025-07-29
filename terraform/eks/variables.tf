@@ -233,4 +233,18 @@ variable "alb_controller_namespace" {
   default     = "default"
 }
 
- 
+#################################################################################
+# NGINX Ingress Controller Configuration
+#################################################################################
+
+variable "enable_nginx_ingress_controller" {
+  description = "Enable NGINX Ingress Controller with Pod Identity"
+  type        = bool
+  default     = true
+}
+
+variable "nginx_ingress_controller_namespace" {
+  description = "Namespace for NGINX Ingress Controller"
+  type        = string
+  default     = "helicone-infrastructure"
+}
