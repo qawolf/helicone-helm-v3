@@ -8,7 +8,7 @@ aiGateway:
 
   serviceAccount:
     enabled: true
-    name: "helicone-ai-gateway"
+    name: "helicone-us-east-1-ai-gateway-sa"
     roleArn: "arn:aws:iam::849596434884:role/helicone-ai-gateway-pod-identity-role"
     annotations: {}
 
@@ -125,6 +125,7 @@ aiGateway:
         # Every 60 seconds
         periodSeconds: 60
 
+
   config:
     telemetry:
       level: "info,ai_gateway=trace"
@@ -142,11 +143,11 @@ aiGateway:
 
     cache-store:
       type: redis
-      host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+      host-url: "rediss://helicone-valkey-cache-us-east-1-t4dz5b.serverless.use1.cache.amazonaws.com"
 
     rate-limit-store:
       type: redis
-      host-url: "rediss://helicone-valkey-cache-hmjlk9.serverless.usw2.cache.amazonaws.com:6379"
+      host-url: "rediss://helicone-valkey-cache-us-east-1-t4dz5b.serverless.use1.cache.amazonaws.com"
 
     deployment-target:
       type: cloud
