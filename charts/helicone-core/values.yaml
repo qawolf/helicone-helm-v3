@@ -6,6 +6,7 @@
 
 helicone:
   # S3 configuration for service account-based access
+  # TODO Make sure that the correct IAM role is used for the service account such that the cluster can access the bucket.
   s3:
     # Set to true to use service accounts with IAM roles instead of access keys
     serviceAccount:
@@ -406,11 +407,10 @@ mailhog:
 # External Secrets Configuration
 #################################################################################
 
-# External Secrets Operator configuration for AWS Secrets Manager integration
-# When enabled, secrets will be pulled from AWS Secrets Manager instead of using SealedSecrets
+# Note: A secrets manager controller is required to be installed in the cluster to use this feature.
+# See: https://github.com/external-secrets/external-secrets
 externalSecrets:
-  # Set to true to enable External Secrets Operator integration
-  enabled: false
+  enabled: true
 
   # Refresh interval for secret synchronization
   refreshInterval: "30s"
@@ -425,19 +425,5 @@ externalSecrets:
 
   # Prefix for secret keys in AWS Secrets Manager
   secretPrefix: "helicone"
-#################################################################################
-# Sealed Secrets Configuration
-#################################################################################
-
-# Secrets are now managed via Bitnami Sealed Secrets for GitOps-friendly secret management.
-# When both externalSecrets.enabled and sealedSecrets.enabled are false, vanilla Kubernetes secrets will be used (secrets are defined here in the values.yaml or passed as secrets.yaml via the -f flag during install)
-#
-# To generate encrypted secrets:
-#   1. Install kubeseal CLI: https://github.com/bitnami-labs/sealed-secrets
-#   2. Run: ./scripts/generate-sealed-secrets.sh [environment] [namespace]
-#   3. Commit the encrypted secrets to Git (they are safe to store)
-#
-# The SealedSecret resources will automatically create the required Kubernetes Secrets
-# that the application components reference.
-sealedSecrets:
-  enabled: false
+# When externalSecrets.enabled is false, vanilla Kubernetes secrets will be used
+# (secrets are defined here in the values.yaml or passed as secrets.yaml via the -f flag during install)

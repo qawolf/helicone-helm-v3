@@ -1,6 +1,6 @@
 apiVersion: v2
 name: helicone-core
-description: Helicone Core Application - Web, Jawn, ClickHouse, MinIO, PostgreSQL
+description: Helicone Core Application - Web, Jawn, ClickHouse, MinIO, PostgreSQL with AWS Secrets Manager integration
 type: application
 version: 0.1.0
 appVersion: "2025.05.23"

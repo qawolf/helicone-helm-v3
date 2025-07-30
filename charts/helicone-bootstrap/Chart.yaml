@@ -10,7 +10,10 @@ dependencies:
     version: "1.8.4"
     repository: "https://aws.github.io/eks-charts"
     condition: awsLoadBalancerController.enabled
-
+  - name: external-secrets
+    version: "0.10.5"
+    repository: "https://charts.external-secrets.io"
+    condition: externalSecrets.enabled
 keywords:
   - helicone
   - bootstrap
