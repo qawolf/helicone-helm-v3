@@ -6,6 +6,7 @@
 
 helicone:
   # S3 configuration for service account-based access
+  # TODO Make sure that the correct IAM role is used for the service account such that the cluster can access the bucket.
   s3:
     # Set to true to use service accounts with IAM roles instead of access keys
     serviceAccount:
@@ -406,8 +407,8 @@ mailhog:
 # External Secrets Configuration
 #################################################################################
 
-# External Secrets Operator configuration for AWS Secrets Manager integration
-# When enabled, secrets will be pulled from AWS Secrets Manager instead of using SealedSecrets
+# Note: A secrets manager controller is required to be installed in the cluster to use this feature.
+# See: https://github.com/external-secrets/external-secrets
 externalSecrets:
   enabled: true
 

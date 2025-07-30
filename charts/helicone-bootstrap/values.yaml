@@ -20,6 +20,17 @@ clusterAutoscaler:
     - "--max-node-provision-time=15m"
     - "--scan-interval=10s"
 
+externalSecrets:
+  enabled: true
+  installCRDs: true
+  serviceAccount:
+    name: external-secrets
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::849596434884:role/helicone-external-secrets-role
+  resources:
+    requests:
+      cpu: 100m
+
 nginxIngressController:
   enabled: true
   fullnameOverride: "nginx-controller"

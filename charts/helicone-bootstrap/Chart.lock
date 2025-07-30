@@ -2,5 +2,8 @@ dependencies:
 - name: aws-load-balancer-controller
   repository: https://aws.github.io/eks-charts
   version: 1.8.4
-digest: sha256:0dc8ca736d4e6f478dc3fa164675dbeed31d15b6a596f9256ec6d8090e958fa3
-generated: "2025-07-29T13:26:08.030436-07:00"
+- name: external-secrets
+  repository: https://charts.external-secrets.io
+  version: 0.10.5
+digest: sha256:7ed0c14487d61eee63252aa29ed0a682d63eb4c8c43ca9fb519e0bc5264bbad3
+generated: "2025-07-29T18:11:06.189448-07:00"
