@@ -4,50 +4,6 @@ variable "cloudflare_api_token" {
   sensitive   = true
 }
 
-variable "cloudflare_subdomain" {
-  description = "Subdomain for the application"
-  type        = string
-  default     = "filevine"
-}
-
-# Cloudflare Configuration for helicone.ai
-variable "enable_helicone_ai_domain" {
-  description = "Whether to create DNS records for helicone.ai domain"
-  type        = bool
-  default     = true
-}
-
-variable "cloudflare_helicone_ai_zone_name" {
-  description = "Cloudflare zone name for helicone.ai domain"
-  type        = string
-  default     = "helicone.ai"
-}
-
-variable "cloudflare_helicone_ai_subdomain" {
-  description = "Subdomain for the helicone.ai application"
-  type        = string
-  default     = "filevine"
-}
-
-variable "create_helicone_ai_root_domain_record" {
-  description = "Whether to create a DNS record for the root domain (helicone.ai)"
-  type        = bool
-  default     = false
-}
-
-variable "cloudflare_helicone_test_zone_id" {
-  description = "Cloudflare zone ID for helicone-test.com domain (required if enable_helicone_test_domain is true)"
-  type        = string
-  default     = ""
-}
-
-# EKS load balancer hostname for DNS records
-variable "load_balancer_hostname" {
-  description = "The hostname of the EKS load balancer to point DNS records to"
-  type        = string
-  default     = ""
-}
-
 # ACM certificate validation options
 variable "certificate_validation_options" {
   description = "List of certificate validation options from ACM certificate"
@@ -58,4 +14,43 @@ variable "certificate_validation_options" {
     resource_record_value = string
   }))
   default = []
+}
+
+# Flexible DNS records configuration
+variable "dns_records" {
+  description = "List of DNS records to create in Cloudflare zones"
+  type = list(object({
+    zone_name             = string              # e.g., "helicone.ai"
+    zone_id               = optional(string)    # Optional: provide zone_id directly, otherwise will be looked up
+    subdomain             = string              # e.g., "api", "app", "filevine"
+    target                = string              # Load balancer hostname or target
+    type                  = optional(string, "CNAME")  # Record type, defaults to CNAME
+    ttl                   = optional(number, 1)        # TTL, defaults to 1 (auto when proxied)
+    proxied               = optional(bool, true)       # Whether to proxy through Cloudflare
+    comment               = optional(string)           # Optional comment for the record
+    enabled               = optional(bool, true)       # Whether to create this record
+  }))
+  default = []
+  
+  validation {
+    condition = alltrue([
+      for record in var.dns_records : record.zone_name != "" && record.subdomain != "" && record.target != ""
+    ])
+    error_message = "Each DNS record must have non-empty zone_name, subdomain, and target."
+  }
+}
+
+# Zone configurations
+variable "cloudflare_zones" {
+  description = "Map of zone names to their configuration (zone_id is required)"
+  type = map(object({
+    zone_id = string  # Zone ID is required
+    enabled = optional(bool, true)
+  }))
+  default = {
+    "helicone.ai" = {
+      zone_id = "391fdcbd3e8173410d3353d4e78f82a4"
+      enabled = true
+    }
+  }
 } 

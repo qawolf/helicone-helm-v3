@@ -1,29 +1,66 @@
 # Cloudflare API Configuration
 cloudflare_api_token = "your_cloudflare_api_token_here"
 
-# Helicone Test Domain Configuration (optional)
-enable_helicone_test_domain = false
-cloudflare_zone_name = "helicone-test.com"
-cloudflare_subdomain = "filevine"
-create_root_domain_record = false
-cloudflare_helicone_test_zone_id = ""  # Set this to the zone ID if you have access to helicone-test.com zone
+# Configure multiple DNS records for multiple load balancers and subdomains
+dns_records = [
+  # First load balancer - main application
+  {
+    zone_name = "helicone.ai"
+    subdomain = "app"
+    target    = "your-first-load-balancer.elb.us-west-2.amazonaws.com"
+    comment   = "Main application load balancer"
+  },
+  # Second load balancer - API service
+  {
+    zone_name = "helicone.ai"
+    subdomain = "api"
+    target    = "your-second-load-balancer.elb.us-west-2.amazonaws.com"
+    comment   = "API service load balancer"
+  },
+  # Different zone example (if you have multiple zones)
+  {
+    zone_name = "helicone-test.com"
+    zone_id   = "your-helicone-test-zone-id-here"  # Optional: provide zone_id directly
+    subdomain = "staging"
+    target    = "your-staging-load-balancer.elb.us-west-2.amazonaws.com"
+    proxied   = true
+    comment   = "Staging environment"
+  },
+  # Root domain example
+  {
+    zone_name = "helicone.ai"
+    subdomain = "@"  # @ represents the root domain
+    target    = "your-main-load-balancer.elb.us-west-2.amazonaws.com"
+    comment   = "Root domain redirect"
+  }
+]
 
-# Helicone.ai Domain Configuration
-# Set to false if you don't have access to the helicone.ai zone
-enable_helicone_ai_domain = true
-cloudflare_helicone_ai_zone_name = "helicone.ai"
-cloudflare_helicone_ai_subdomain = "filevine"  # Change this to your desired subdomain
-create_helicone_ai_root_domain_record = false
+# Zone configuration (zone_id is required for each zone)
+cloudflare_zones = {
+  "helicone.ai" = {
+    zone_id = "391fdcbd3e8173410d3353d4e78f82a4"  # helicone.ai zone ID
+    enabled = true
+  }
+  "helicone-test.com" = {
+    zone_id = "your-helicone-test-zone-id-here"  # Required: provide the zone ID
+    enabled = true
+  }
+}
 
-load_balancer_hostname = "your-eks-load-balancer-hostname.elb.amazonaws.com"
-
-# Example format for certificate validation records:
+# Certificate validation records for ACM certificates
+# Example format:
 # certificate_validation_options = [
 #   {
-#     domain_name           = "filevine.helicone.ai"
-#     resource_record_name  = "_abc123.filevine.helicone.ai."
+#     domain_name           = "app.helicone.ai"
+#     resource_record_name  = "_abc123.app.helicone.ai."
 #     resource_record_type  = "CNAME"
 #     resource_record_value = "_xyz789.acm-validations.aws."
+#   },
+#   {
+#     domain_name           = "api.helicone.ai"
+#     resource_record_name  = "_def456.api.helicone.ai."
+#     resource_record_type  = "CNAME"
+#     resource_record_value = "_uvw789.acm-validations.aws."
 #   }
 # ]
 certificate_validation_options = [] 
