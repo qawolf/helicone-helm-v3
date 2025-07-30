@@ -9,13 +9,11 @@ aiGateway:
   serviceAccount:
     enabled: true
     name: "helicone-us-east-1-ai-gateway-sa"
-    roleArn: "arn:aws:iam::849596434884:role/helicone-ai-gateway-pod-identity-role"
     annotations: {}
 
   podAnnotations: {}
 
   # TODO: add canaries or blue-green
-  # Rolling Update Deployment Strategy
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -109,22 +107,14 @@ aiGateway:
     targetMemoryUtilizationPercentage: 80
     behavior:
       scaleUp:
-        # 120 seconds stabilization window to ignore startup spikes
         stabilizationWindowSeconds: 120
-        # Allow scaling up by 100% of current pods
         percent: 100
-        # Allow adding up to 2 pods at once
         pods: 2
-        # Every 140 seconds
         periodSeconds: 140
       scaleDown:
-        # 180 seconds (3 minutes) stabilization before scaling down
         stabilizationWindowSeconds: 180
-        # Allow removing 1 pod at once
         pods: 1
-        # Every 60 seconds
         periodSeconds: 60
-
 
   config:
     telemetry:
@@ -136,8 +126,8 @@ aiGateway:
     helicone:
       features: all
 
-    minio:
-      bucket-name: "request-response-storage"
+    s3:
+      bucket-name: "helm-request-response-storage"
       region: "us-west-2"
       host: "https://s3.us-west-2.amazonaws.com"
 

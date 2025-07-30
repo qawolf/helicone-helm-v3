@@ -9,10 +9,7 @@ aiGateway:
   serviceAccount:
     enabled: true
     name: "helicone-ai-gateway"
-    roleArn: "arn:aws:iam::849596434884:role/helicone-ai-gateway-pod-identity-role"
     annotations: {}
-
-  podAnnotations: {}
 
   # TODO: add canaries or blue-green
   # Rolling Update Deployment Strategy
@@ -136,7 +133,7 @@ aiGateway:
       features: all
 
     minio:
-      bucket-name: "request-response-storage"
+      bucket-name: "helm-request-response-storage"
       region: "us-west-2"
       host: "https://s3.us-west-2.amazonaws.com"
 
