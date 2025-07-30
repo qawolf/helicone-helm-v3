@@ -126,8 +126,8 @@ aiGateway:
     helicone:
       features: all
 
-    s3:
-      bucket-name: "helm-request-response-storage"
+    minio:
+      bucket-name: "request-response-storage"
       region: "us-west-2"
       host: "https://s3.us-west-2.amazonaws.com"
 
