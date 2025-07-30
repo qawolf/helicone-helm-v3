@@ -51,3 +51,6 @@ secrets.yaml
 # Task files
 # tasks.json
 # tasks/
+
+# vscode files
+.vscode/settings.json
