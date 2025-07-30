@@ -1,13 +1,5 @@
 terraform {
   required_version = ">= 1.0"
-  
-  cloud { 
-    organization = "helicone" 
-
-    workspaces { 
-      name = "helicone-cloudflare" 
-    } 
-  }
 
   required_providers {
     cloudflare = {
@@ -22,81 +14,59 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
-# Data source to get EKS state outputs from Terraform Cloud
-data "terraform_remote_state" "eks" {
-  backend = "remote"
-  
-  config = {
-    organization = "helicone"
-    workspaces = {
-      name = "helicone"  # This matches the EKS workspace name
-    }
-  }
-}
-
-# Data source to get ACM state outputs from Terraform Cloud
-data "terraform_remote_state" "acm" {
-  backend = "remote"
-  
-  config = {
-    organization = "helicone"
-    workspaces = {
-      name = "helicone-acm"  # This matches the acm workspace name
-    }
-  }
-}
-
-# Locals for better error handling
+# Locals for processing DNS records and zones
 locals {
-  # Check if we have valid EKS outputs
-  has_load_balancer = try(data.terraform_remote_state.eks.outputs.load_balancer_hostname, null) != null
-  
-  # Zone IDs with better error handling - don't use empty string fallback
-  # This will cause resources to not be created rather than fail with empty zone_id
-  helicone_ai_zone_id = var.enable_helicone_ai_domain && length(data.cloudflare_zone.helicone_ai) > 0 ? data.cloudflare_zone.helicone_ai[0].id : null
-  
-  # Check if zones were found
-  helicone_ai_zone_found = local.helicone_ai_zone_id != null
+  # Process DNS records with zone IDs (zone_id is now required)
+  processed_dns_records = {
+    for idx, record in var.dns_records : "${record.zone_name}-${record.subdomain}" => merge(record, {
+      zone_id = record.zone_id != null ? record.zone_id : var.cloudflare_zones[record.zone_name].zone_id
+      record_name = record.subdomain == "@" ? record.zone_name : "${record.subdomain}.${record.zone_name}"
+    }) if record.enabled && var.cloudflare_zones[record.zone_name].enabled
+  }
 }
 
-# Data source for the helicone.ai Cloudflare zone
-# Using zone_id directly to avoid syntax issues with filters
-data "cloudflare_zone" "helicone_ai" {
-  count   = var.enable_helicone_ai_domain ? 1 : 0
-  zone_id = "391fdcbd3e8173410d3353d4e78f82a4"  # helicone.ai zone ID
+# Create DNS records for all configured DNS records
+resource "cloudflare_dns_record" "dns_records" {
+  for_each = local.processed_dns_records
+
+  zone_id = each.value.zone_id
+  name    = each.value.subdomain
+  content = each.value.target
+  type    = each.value.type
+  ttl     = each.value.ttl
+  proxied = each.value.proxied
+
+  comment = coalesce(
+    each.value.comment,
+    "Managed by Terraform - ${each.value.subdomain}.${each.value.zone_name} -> ${each.value.target}"
+  )
 }
 
-resource "cloudflare_dns_record" "helicone_ai_app" {
-  count   = local.helicone_ai_zone_found && local.has_load_balancer ? 1 : 0
-  zone_id = local.helicone_ai_zone_id
-  name    = var.cloudflare_helicone_ai_subdomain
-  content = data.terraform_remote_state.eks.outputs.load_balancer_hostname
-  type    = "CNAME"
-  ttl     = 1  # TTL=1 when proxied
-  proxied = true  # Enable Cloudflare proxy for HTTPS termination
-
-  comment = "Managed by Terraform - Points to AWS EKS load balancer with Cloudflare proxy for helicone.ai"
-}
-
-# Certificate validation records for helicone.ai ACM certificate
-resource "cloudflare_dns_record" "helicone_ai_cert_validation" {
-  for_each = local.helicone_ai_zone_found && data.terraform_remote_state.acm.outputs.certificate_helicone_ai_validation_options != null ? {
-    for dvo in data.terraform_remote_state.acm.outputs.certificate_helicone_ai_validation_options : dvo.domain_name => {
+# Certificate validation records for ACM certificates
+resource "cloudflare_dns_record" "certificate_validation" {
+  for_each = {
+    for dvo in var.certificate_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
+      # Find the appropriate zone for this domain
+      zone_id = try([
+        for zone_name, config in var.cloudflare_zones : config.zone_id
+        if endswith(dvo.domain_name, zone_name) && config.enabled
+      ][0], null)
     }
-  } : {}
+    if length(var.certificate_validation_options) > 0
+  }
 
-  zone_id = local.helicone_ai_zone_id
+  zone_id = each.value.zone_id
   name    = each.value.name
   content = each.value.record
   type    = each.value.type
   ttl     = 60
 
-  comment = "Managed by Terraform - ACM certificate validation for helicone.ai"
+  comment = "Managed by Terraform - ACM certificate validation for ${each.key}"
   
   lifecycle {
-    ignore_changes = [content, name, type]  # Ignore changes if record already exists
+    ignore_changes = [content, name, type] 
   }
 }
