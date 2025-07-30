@@ -32,6 +32,25 @@ dns_records = [
     subdomain = "@"  # @ represents the root domain
     target    = "your-main-load-balancer.elb.us-west-2.amazonaws.com"
     comment   = "Root domain redirect"
+  },
+  # A record examples - point to IP addresses
+  {
+    zone_name = "helicone.ai"
+    subdomain = "server"
+    target    = "203.0.113.10"  # IP address for A records
+    type      = "A"
+    ttl       = 300
+    proxied   = false  # A records to specific IPs usually aren't proxied
+    comment   = "Direct server A record"
+  },
+  # A record with Cloudflare proxy (for web services)
+  {
+    zone_name = "helicone.ai"
+    subdomain = "web"
+    target    = "203.0.113.20"
+    type      = "A"
+    proxied   = true
+    comment   = "Web server with Cloudflare proxy"
   }
 ]
 
