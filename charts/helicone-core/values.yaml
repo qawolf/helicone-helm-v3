@@ -75,9 +75,9 @@ helicone:
           periodSeconds: 15
     migrationRunner:
       image:
-        repository: 849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/migrations
+        repository: helicone/migrations
         pullPolicy: IfNotPresent
-        tag: "v2025-06-17"
+        tag: "v2025.07.30"
       resources: {}
 
     # Cloud SQL Auth Proxy configuration
