@@ -77,12 +77,12 @@ resource "aws_secretsmanager_secret_version" "web" {
   }
 }
 
-# AI Gateway API keys
+# AI Gateway cloud secrets for ECS deployment
 resource "aws_secretsmanager_secret" "ai_gateway" {
   count = var.create_ai_gateway_secrets ? 1 : 0
 
-  name                    = "${var.secret_prefix}/ai-gateway"
-  description             = "Helicone AI Gateway API keys"
+  name                    = "${var.secret_prefix}/ai-gateway-cloud-secrets"
+  description             = "Helicone AI Gateway cloud secrets for ECS deployment"
   recovery_window_in_days = var.recovery_window_days
 
   tags = var.tags
@@ -93,10 +93,10 @@ resource "aws_secretsmanager_secret_version" "ai_gateway" {
 
   secret_id = aws_secretsmanager_secret.ai_gateway[0].id
   secret_string = jsonencode({
-    openai_api_key    = var.ai_gateway_secrets.openai_api_key
-    anthropic_api_key = var.ai_gateway_secrets.anthropic_api_key
-    gemini_api_key    = var.ai_gateway_secrets.gemini_api_key
-    helicone_api_key  = var.ai_gateway_secrets.helicone_api_key
+    AI_GATEWAY__DATABASE__URL = var.ai_gateway_secrets.database_url
+    PGSSLROOTCERT            = var.ai_gateway_secrets.pg_ssl_root_cert
+    AI_GATEWAY__MINIO__ACCESS_KEY = var.ai_gateway_secrets.minio_access_key
+    AI_GATEWAY__MINIO__SECRET_KEY = var.ai_gateway_secrets.minio_secret_key
   })
 
   lifecycle {
@@ -120,7 +120,8 @@ resource "aws_secretsmanager_secret_version" "clickhouse" {
 
   secret_id = aws_secretsmanager_secret.clickhouse[0].id
   secret_string = jsonencode({
-    user = var.clickhouse_secrets.user
+    user     = var.clickhouse_secrets.user
+    password = var.clickhouse_secrets.password
   })
 
   lifecycle {
@@ -129,35 +130,31 @@ resource "aws_secretsmanager_secret_version" "clickhouse" {
 }
 
 #################################################################################
-# IAM Role for External Secrets Operator (IRSA)
+# IAM Role for External Secrets Operator (Pod Identity)
 #################################################################################
 
-# Trust policy for External Secrets Operator service account
+# Trust policy for External Secrets Operator using Pod Identity
 data "aws_iam_policy_document" "external_secrets_trust" {
   statement {
     effect = "Allow"
 
     principals {
-      type        = "Federated"
-      identifiers = ["arn:${local.partition}:iam::${local.account_id}:oidc-provider/${var.eks_oidc_provider}"]
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
     }
 
-    actions = ["sts:AssumeRoleWithWebIdentity"]
+    actions = ["sts:AssumeRole", "sts:TagSession"]
 
     condition {
       test     = "StringEquals"
-      variable = "${var.eks_oidc_provider}:sub"
-      values   = [
-        "system:serviceaccount:helicone-infrastructure:helicone-infrastructure-external-secrets",
-        "system:serviceaccount:external-secrets:external-secrets",
-        "system:serviceaccount:helicone:external-secrets-sa"
-      ]
+      variable = "aws:SourceAccount"
+      values   = [local.account_id]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${var.eks_oidc_provider}:aud"
-      values   = ["sts.amazonaws.com"]
+      variable = "eks:cluster-name"
+      values   = [var.eks_cluster_name]
     }
   }
 }
@@ -166,7 +163,7 @@ data "aws_iam_policy_document" "external_secrets_trust" {
 resource "aws_iam_role" "external_secrets" {
   name               = "${var.resource_prefix}-external-secrets-role"
   assume_role_policy = data.aws_iam_policy_document.external_secrets_trust.json
-  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager"
+  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager via Pod Identity"
 
   tags = var.tags
 }
@@ -257,4 +254,38 @@ resource "aws_kms_alias" "secrets" {
 
   name          = "alias/${var.resource_prefix}-secrets"
   target_key_id = aws_kms_key.secrets[0].key_id
+}
+
+#################################################################################
+# EKS Pod Identity Association for External Secrets Operator
+#################################################################################
+
+# Pod Identity Association for External Secrets Operator in helicone-infrastructure namespace
+resource "aws_eks_pod_identity_association" "external_secrets_helicone_infrastructure" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "helicone-infrastructure"
+  service_account = "helicone-infrastructure-external-secrets"
+  role_arn        = aws_iam_role.external_secrets.arn
+
+  tags = var.tags
+}
+
+# Pod Identity Association for External Secrets Operator in external-secrets namespace
+resource "aws_eks_pod_identity_association" "external_secrets_external_secrets" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "external-secrets"
+  service_account = "external-secrets"
+  role_arn        = aws_iam_role.external_secrets.arn
+
+  tags = var.tags
+}
+
+# Pod Identity Association for External Secrets Operator in helicone namespace
+resource "aws_eks_pod_identity_association" "external_secrets_helicone" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "helicone"
+  service_account = "external-secrets-sa"
+  role_arn        = aws_iam_role.external_secrets.arn
+
+  tags = var.tags
 } 

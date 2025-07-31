@@ -5,19 +5,11 @@
 ################################################################################
 
 helicone:
-  # S3 configuration for service account-based access
-  # TODO Make sure that the correct IAM role is used for the service account such that the cluster can access the bucket.
   s3:
-    # Set to true to use service accounts with IAM roles instead of access keys
     serviceAccount:
       enabled: true
-      # IAM role ARN for the service account to assume (will be updated after terraform apply)
-      roleArn: "arn:aws:iam::849596434884:role/helm-request-response-storage-service-account-role"
-      # AWS region for S3 service
       region: "us-west-2"
-    # S3 bucket name (used when serviceAccount.enabled is true)
     bucketName: "helm-request-response-storage"
-    # S3 endpoint (defaults to AWS S3 when using service accounts)
     endpoint: "https://s3.us-west-2.amazonaws.com"
 
   web:
@@ -25,7 +17,7 @@ helicone:
     image:
       repository: helicone/web
       pullPolicy: IfNotPresent
-      tag: "v2025-06-17"
+      tag: "v2025.07.23"
     replicaCount: 1
     service:
       annotations: {}
@@ -221,14 +213,12 @@ helicone:
           owner: helicone
           secret:
             name: helicone-app-credentials
-          # postInitSQL will be configured in the template to use the password from helicone.config.heliconePassword
-          # The password ALTER statement is automatically added by the template
           postInitSQL:
             - "ALTER USER helicone CREATEROLE;"
             - "GRANT postgres TO helicone;"
       storage:
         size: 5Gi
-        storageClass: "gp2-immediate"
+        storageClass: "gp2"
       monitoring:
         enabled: true
       backup:
@@ -261,7 +251,7 @@ helicone:
         memory: "1Gi"
         cpu: "500m"
     persistence:
-      storageClass: "gp2-immediate"
+      storageClass: "gp2"
       size: 10Gi
 
   # Note: If enabled is set to false, then S3 is used instead of MinIO
@@ -298,7 +288,7 @@ helicone:
     image:
       repository: helicone/jawn
       pullPolicy: IfNotPresent
-      tag: "v2025-06-17"
+      tag: "v2025.06.05"
     replicaCount: 1
     service:
       annotations: {}
@@ -412,18 +402,19 @@ mailhog:
 externalSecrets:
   enabled: true
 
-  # Refresh interval for secret synchronization
   refreshInterval: "30s"
-
-  # AWS Secrets Manager configuration
   aws:
     region: "us-west-2"
-
-  # Service account for AWS authentication
   serviceAccount:
     name: "external-secrets-sa"
 
-  # Prefix for secret keys in AWS Secrets Manager
   secretPrefix: "helicone"
 # When externalSecrets.enabled is false, vanilla Kubernetes secrets will be used
 # (secrets are defined here in the values.yaml or passed as secrets.yaml via the -f flag during install)
+
+#################################################################################
+# Bitnami CloudNativePG Configuration
+#################################################################################
+cloudnative-pg:
+  crds:
+    install: true

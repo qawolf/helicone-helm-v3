@@ -59,13 +59,13 @@ variable "recovery_window_days" {
 # EKS Configuration
 #################################################################################
 
-variable "eks_oidc_provider" {
-  description = "EKS OIDC provider URL (without https://)"
+variable "eks_cluster_name" {
+  description = "Name of the EKS cluster for Pod Identity Association"
   type        = string
 
   validation {
-    condition     = can(regex("^oidc\\.eks\\.", var.eks_oidc_provider))
-    error_message = "EKS OIDC provider must be a valid EKS OIDC provider URL."
+    condition     = length(var.eks_cluster_name) > 0
+    error_message = "EKS cluster name cannot be empty."
   }
 }
 
@@ -90,6 +90,11 @@ variable "database_secrets" {
   validation {
     condition     = length(var.database_secrets.username) > 0
     error_message = "Database username cannot be empty."
+  }
+
+  validation {
+    condition     = var.database_secrets.username == "helicone"
+    error_message = "Database username must be 'helicone' to match Helm chart expectations."
   }
 
   validation {
@@ -145,18 +150,19 @@ variable "create_ai_gateway_secrets" {
 }
 
 variable "ai_gateway_secrets" {
-  description = "AI Gateway API key values"
+  description = "AI Gateway cloud secrets for ECS deployment"
   type = object({
-    openai_api_key    = string
-    anthropic_api_key = string
-    gemini_api_key    = string
-    helicone_api_key  = string
+    # Cloud secrets for ECS deployment
+    database_url      = string
+    pg_ssl_root_cert  = string
+    minio_access_key  = string
+    minio_secret_key  = string
   })
   default = {
-    openai_api_key    = ""
-    anthropic_api_key = ""
-    gemini_api_key    = ""
-    helicone_api_key  = ""
+    database_url      = ""
+    pg_ssl_root_cert  = ""
+    minio_access_key  = ""
+    minio_secret_key  = ""
   }
   sensitive = true
 }
@@ -170,10 +176,12 @@ variable "create_clickhouse_secrets" {
 variable "clickhouse_secrets" {
   description = "ClickHouse secret values"
   type = object({
-    user = string
+    user     = string
+    password = string
   })
   default = {
-    user = "default"
+    user     = "default"
+    password = "your-clickhouse-password"
   }
   sensitive = true
 }

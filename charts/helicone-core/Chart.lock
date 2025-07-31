@@ -4,6 +4,6 @@ dependencies:
   version: 0.2.0
 - name: cloudnative-pg
   repository: https://charts.bitnami.com/bitnami
-  version: 1.0.2
-digest: sha256:bebde87fd93967110d704d1f376c63fb82a1cb248f89ad4abbf21154eca9489b
-generated: "2025-07-09T16:46:36.139289-07:00"
+  version: 1.0.8
+digest: sha256:46f71c0cf36b0cb6694ad67b84b1bbde69ed09d5349bdf8160d3da32cdcd00a5
+generated: "2025-07-30T17:40:04.467525-07:00"
