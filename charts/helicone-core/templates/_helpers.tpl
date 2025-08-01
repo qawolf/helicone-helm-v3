@@ -86,7 +86,19 @@ ClickHouse URL for application clients (full URL with protocol and port)
 {{- if .Values.helicone.clickhouse.enabled }}
   value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
 {{- else }}
-  value: {{ .Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided" | quote }}
+  value: {{ printf "%s:%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) (.Values.helicone.config.externalClickhousePort | default "8123") }}
+{{- end }}
+{{- end }}
+
+{{/*
+ClickHouse host for Migrations (with protocol, no port)
+*/}}
+{{- define "helicone.env.clickhouseHostForMigrations" -}}
+- name: CLICKHOUSE_HOST
+{{- if .Values.helicone.clickhouse.enabled }}
+  value: {{ printf "http://%s" (include "clickhouse.name" .) | quote }}
+{{- else }}
+  value: {{ printf "%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) }}
 {{- end }}
 {{- end }}
 
@@ -98,7 +110,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- if .Values.helicone.clickhouse.enabled }}
   value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
 {{- else }}
-  value: {{ .Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided" | quote }}
+  value: {{ printf "%s:%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) (.Values.helicone.config.externalClickhousePort | default "8123") }}
 {{- end }}
 {{- end }}
 
@@ -290,7 +302,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- if .Values.helicone.cloudnativepg.enabled }}
 {{- printf "%s:$(DB_PASSWORD)@%s-rw:$(DB_PORT)/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
 {{- else if .Values.helicone.web.cloudSqlProxy.enabled }}
-{{- printf "$(DB_USER):$(DB_PASSWORD)@localhost:%s/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) }}
+{{- printf "$(DB_USER):$(DB_PASSWORD)@localhost:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) .Values.helicone.config.dbName }}
 {{- else }}
 {{- printf "$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" }}
 {{- end }}
@@ -310,7 +322,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- if .Values.helicone.cloudnativepg.enabled }}
   value: {{ printf "jdbc:postgresql://%s-rw:5432/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database | quote }}
 {{- else if .Values.helicone.web.cloudSqlProxy.enabled }}
-  value: {{ printf "jdbc:postgresql://localhost:%s/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) | quote }}
+  value: {{ printf "jdbc:postgresql://localhost:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) .Values.helicone.config.dbName | quote }}
 {{- else }}
   value: {{ .Values.helicone.config.flywayUrl | default (printf "jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions") | quote }}
 {{- end }}
@@ -365,7 +377,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 
 {{- define "helicone.env.smtpHost" -}}
 - name: SMTP_HOST
-  value: "helicone-mailhog"
+  value: {{ .Values.helicone.config.smtpHost }}
 {{- end }}
 
 # TODO Move these into the same template such that they can be grouped together (define and include).
@@ -465,16 +477,15 @@ Cloud SQL Auth Proxy helpers
 {{- end }}
 
 {{- define "helicone.cloudSqlProxy.args" -}}
-{{- $args := list -}}
-{{- $args = append $args (printf "-instances=%s=tcp:0.0.0.0:%d" (include "helicone.cloudSqlProxy.connectionName" .) (include "helicone.cloudSqlProxy.port" . | int)) -}}
 {{- if not .Values.helicone.web.cloudSqlProxy.useWorkloadIdentity -}}
-{{- $args = append $args "-credential_file=/secrets/cloudsql/key.json" -}}
+- "--credentials-file=/secrets/cloudsql/key.json"
 {{- end -}}
-{{- range .Values.helicone.web.cloudSqlProxy.extraArgs -}}
-{{- $args = append $args . -}}
-{{- end -}}
-{{- $args | toJson -}}
+{{- range .Values.helicone.web.cloudSqlProxy.extraArgs }}
+- "{{ . }}"
 {{- end }}
+- "--port={{ include "helicone.cloudSqlProxy.port" . | int }}"
+- "{{ include "helicone.cloudSqlProxy.connectionName" . }}"
+{{- end -}}
 
 # TODO Move these definitions to the web chart (and refactor accordingly).
 {{- define "helicone.env.siteUrl" -}}

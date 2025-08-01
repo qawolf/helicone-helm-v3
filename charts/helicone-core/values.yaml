@@ -141,63 +141,6 @@ helicone:
     router:
       enabled: true
 
-  aiGateway:
-    enabled: true
-    image:
-      repository: helicone/ai-gateway
-      pullPolicy: IfNotPresent
-      tag: "sha-765b2b1"
-    replicaCount: 1
-    service:
-      annotations: {}
-      type: ClusterIP
-      port: 8080
-    ingress:
-      enabled: false
-      className: "nginx"
-      annotations: {}
-      hosts:
-        - host: filevine.helicone.ai/ai-gateway
-          paths:
-            - path: /
-              pathType: Prefix
-      tls: []
-    resources:
-      requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
-        cpu: 250m
-        memory: 512Mi
-    extraEnvVars:
-      - name: AI_GATEWAY__SERVER__ADDRESS
-        value: "0.0.0.0"
-      - name: OPENAI_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: helicone-ai-gateway-secrets
-            key: openai_api_key
-      # Only required if deployment target == cloud
-      # - name: AI_GATEWAY__MINIO__ACCESS_KEY
-      #   valueFrom:
-      #     secretKeyRef:
-      #       name: helicone-minio-secrets
-      #       key: root_user
-      # - name: AI_GATEWAY__MINIO__SECRET_KEY
-      #   valueFrom:
-      #     secretKeyRef:
-      #       name: helicone-minio-secrets
-      #       key: root_password
-    config:
-      routers:
-        default:
-          load-balance:
-            chat:
-              strategy: latency
-              targets:
-                - openai
-                - anthropic
-
   cloudnativepg:
     enabled: true
     cluster:
@@ -240,6 +183,9 @@ helicone:
         limits:
           memory: "1Gi"
           cpu: "500m"
+
+  aiGateway:
+    enabled: true
 
   clickhouse:
     enabled: true
@@ -374,6 +320,7 @@ helicone:
     mailerUrlpathsInvite: "/auth/v1/verify"
     mailerUrlpathsRecovery: "/auth/v1/verify"
     mailerUrlpathsEmailChange: "/auth/v1/verify"
+    smtpHost: "helicone-mailhog"
     enableEmailSignup: "true"
     enableEmailAutoconfirm: "false"
     enablePhoneSignup: "true"
@@ -387,6 +334,65 @@ helicone:
     googleProjectId: "GOOGLE_PROJECT_ID"
     googleProjectNumber: "GOOGLE_PROJECT_NUMBER"
     nodeEnv: "development"
+
+ai-gateway:
+  helicone:
+    aiGateway:
+      enabled: true
+      image:
+        repository: helicone/ai-gateway
+        pullPolicy: IfNotPresent
+        tag: "sha-765b2b1"
+      replicaCount: 1
+      service:
+        annotations: {}
+        type: ClusterIP
+        port: 8080
+      ingress:
+        enabled: false
+        className: "nginx"
+        annotations: {}
+        hosts:
+          - host: filevine.helicone.ai/ai-gateway
+            paths:
+              - path: /
+                pathType: Prefix
+        tls: []
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 512Mi
+      extraEnvVars:
+        - name: AI_GATEWAY__SERVER__ADDRESS
+          value: "0.0.0.0"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: helicone-ai-gateway-secrets
+              key: openai_api_key
+        # Only required if deployment target == cloud
+        # - name: AI_GATEWAY__MINIO__ACCESS_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: helicone-minio-secrets
+        #       key: root_user
+        # - name: AI_GATEWAY__MINIO__SECRET_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: helicone-minio-secrets
+        #       key: root_password
+      config:
+        routers:
+          default:
+            load-balance:
+              chat:
+                strategy: latency
+                providers:
+                  - openai
+                  - anthropic
 
 mailhog:
   enabled: true
