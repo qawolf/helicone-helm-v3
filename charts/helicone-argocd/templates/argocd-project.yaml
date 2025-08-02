@@ -56,6 +56,8 @@ spec:
       kind: StorageClass
     - group: "autoscaling.k8s.io"
       kind: VerticalPodAutoscaler
+    - group: "external-secrets.io"
+      kind: ClusterSecretStore
       
   # Namespace-scoped resources which may be deployed
   namespaceResourceWhitelist:
