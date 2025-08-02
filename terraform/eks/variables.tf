@@ -1,11 +1,5 @@
-variable "regions" {
-  description = "List of AWS regions to deploy EKS clusters"
-  type        = list(string)
-  default     = ["us-west-2", "us-east-1"]
-}
-
 variable "region" {
-  description = "Default AWS region (for backwards compatibility)"
+  description = "AWS region for the EKS cluster"
   type        = string
   default     = "us-west-2"
 }
@@ -22,19 +16,8 @@ variable "kubernetes_version" {
   default     = "1.29"  # Update to 1.32 when available in your region
 }
 
-variable "vpc_cidrs" {
-  description = "Map of CIDR blocks for VPCs by region"
-  type        = map(string)
-  default = {
-    "us-west-2" = "10.0.0.0/16"
-    "us-east-1" = "10.1.0.0/16"
-    "eu-west-1" = "10.2.0.0/16"
-    "ap-southeast-1" = "10.3.0.0/16"
-  }
-}
-
 variable "vpc_cidr" {
-  description = "CIDR block for the VPC (deprecated, use vpc_cidrs)"
+  description = "CIDR block for the VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
