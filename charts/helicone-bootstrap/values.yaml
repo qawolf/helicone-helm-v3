@@ -24,7 +24,7 @@ externalSecrets:
   enabled: true
   installCRDs: true
   serviceAccount:
-    name: external-secrets
+    create: true
     annotations:
       aws.amazon.com/pod-identity: "enabled"
   resources:
