@@ -4,7 +4,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: {{ .Values.argocd.project | default .Release.Name }}
-  namespace: {{ .Values.argocd.namespace | default .Release.Namespace }}
+  namespace: {{ .Values.argocd.namespace | default "argocd" }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
   annotations:
@@ -25,9 +25,9 @@ spec:
     
   # Destination clusters and namespaces that applications may deploy into
   destinations:
-    - namespace: {{ .Values.argocd.destination.namespace | default .Release.Namespace }}
+    - namespace: {{ .Values.argocd.destination.namespace | default "helicone" }}
       server: {{ .Values.argocd.destination.server | default "https://kubernetes.default.svc" }}
-    - namespace: {{ .Values.argocd.namespace | default .Release.Namespace }}
+    - namespace: {{ .Values.argocd.namespace | default "argocd" }}
       server: {{ .Values.argocd.destination.server | default "https://kubernetes.default.svc" }}
     - namespace: "monitoring"
       server: {{ .Values.argocd.destination.server | default "https://kubernetes.default.svc" }}

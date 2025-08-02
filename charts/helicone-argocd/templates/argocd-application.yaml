@@ -4,7 +4,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: {{ include "helicone.name" . }}
-  namespace: {{ .Values.argocd.namespace | default .Release.Namespace }}
+  namespace: {{ .Values.argocd.namespace | default "argocd" }}
   labels:
     {{- include "helicone.labels" . | nindent 4 }}
   annotations:
@@ -31,7 +31,7 @@ spec:
       {{- end }}
   destination:
     server: {{ .Values.argocd.destination.server | default "https://kubernetes.default.svc" }}
-    namespace: {{ .Values.argocd.destination.namespace | default .Release.Namespace }}
+    namespace: {{ .Values.argocd.destination.namespace | default "helicone" }}
   syncPolicy:
     automated:
       prune: {{ .Values.argocd.syncPolicy.automated.prune | default true }}
