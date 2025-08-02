@@ -380,6 +380,8 @@ externalSecrets:
     region: "us-west-2"
   serviceAccount:
     name: "external-secrets-sa"
+    annotations:
+      aws.amazon.com/pod-identity: "enabled"
 
   secretPrefix: "helicone"
 # When externalSecrets.enabled is false, vanilla Kubernetes secrets will be used
