@@ -23,10 +23,11 @@ argocd:
     namespace: helicone
 
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: false
-      allowEmpty: false
+    # automated sync disabled - use manual CLI sync instead
+    # automated:
+    #   prune: true
+    #   selfHeal: false
+    #   allowEmpty: false
     retry:
       limit: 5
       backoff:
