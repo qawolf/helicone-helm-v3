@@ -20,7 +20,7 @@ clusterAutoscaler:
     - "--max-node-provision-time=15m"
     - "--scan-interval=10s"
 
-externalSecrets:
+external-secrets:
   enabled: true
   installCRDs: true
   serviceAccount:
