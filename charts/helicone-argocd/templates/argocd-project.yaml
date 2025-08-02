@@ -71,15 +71,19 @@ spec:
       policies:
         - p, proj:{{ .Values.argocd.project | default .Release.Name }}:admin, applications, *, {{ .Values.argocd.project | default .Release.Name }}/*, allow
         - p, proj:{{ .Values.argocd.project | default .Release.Name }}:admin, repositories, *, *, allow
-        - p, proj:{{ .Values.argocd.project | default .Release.Name }}:admin, clusters, get, *, allow
+        - p, proj:{{ .Values.argocd.project | default .Release.Name }}:admin, clusters, *, *, allow
+        - p, proj:{{ .Values.argocd.project | default .Release.Name }}:admin, projects, *, *, allow
       groups:
         - helicone:admin
+        - admin  # Built-in admin user
     - name: developer
       description: "Developer access to Helicone project"
       policies:
         - p, proj:{{ .Values.argocd.project | default .Release.Name }}:developer, applications, get, {{ .Values.argocd.project | default .Release.Name }}/*, allow
         - p, proj:{{ .Values.argocd.project | default .Release.Name }}:developer, applications, sync, {{ .Values.argocd.project | default .Release.Name }}/*, allow
+        - p, proj:{{ .Values.argocd.project | default .Release.Name }}:developer, applications, action/*, {{ .Values.argocd.project | default .Release.Name }}/*, allow
         - p, proj:{{ .Values.argocd.project | default .Release.Name }}:developer, repositories, get, *, allow
+        - p, proj:{{ .Values.argocd.project | default .Release.Name }}:developer, clusters, get, *, allow
       groups:
         - helicone:developer
 {{- end }}
