@@ -45,6 +45,8 @@ spec:
       - PruneLast=true
       - ServerSideApply=true
       - RespectIgnoreDifferences=true
+      - SkipDryRunOnMissingResource=true
+      - ApplyOutOfSyncOnly=true
     retry:
       limit: {{ .Values.argocd.syncPolicy.retry.limit | default 5 }}
       backoff:
