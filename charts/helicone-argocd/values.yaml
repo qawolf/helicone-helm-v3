@@ -23,11 +23,10 @@ argocd:
     namespace: helicone
 
   syncPolicy:
-    # automated sync disabled - use manual CLI sync instead
-    # automated:
-    #   prune: true
-    #   selfHeal: false
-    #   allowEmpty: false
+    automated:
+      prune: true
+      selfHeal: false
+      allowEmpty: false
     retry:
       limit: 5
       backoff:
@@ -127,7 +126,3 @@ argo-cd:
         # Default admin user gets admin role
         g, admin, role:admin
     
-    # Admin password configuration (will be generated if not set)
-    secret:
-      argocdServerAdminPassword: "$2a$10$rRyBsGSHK6.uc8fntPwVIuLVHgsAhAX7TcdrqW/RADU0uh7CaChLa" # password
-      argocdServerAdminPasswordMtime: "2024-01-01T00:00:00Z"
