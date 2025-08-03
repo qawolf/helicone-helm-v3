@@ -192,7 +192,11 @@ data "aws_iam_policy_document" "external_secrets_trust" {
     condition {
       test     = "StringEquals"
       variable = "oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D:sub"
-      values   = ["system:serviceaccount:bootstrap:bootstrap-external-secrets"]
+      values   = [
+        "system:serviceaccount:bootstrap:bootstrap-external-secrets",
+        "system:serviceaccount:helicone:external-secrets-sa",
+        "system:serviceaccount:default:external-secrets-sa"
+      ]
     }
 
     condition {
