@@ -393,3 +393,6 @@ externalSecrets:
 cloudnative-pg:
   crds:
     install: true
+  # Disable the Barman Cloud plugin to avoid ClusterRole conflicts in ArgoCD
+  pluginBarmanCloud:
+    enabled: false
