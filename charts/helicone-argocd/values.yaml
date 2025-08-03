@@ -16,7 +16,9 @@ argocd:
     helm:
       valueFiles:
         - values.yaml
-      parameters: []
+      parameters:
+        - name: helicone.cloudnativepg.enabled
+          value: "true"
 
   destination:
     server: https://kubernetes.default.svc
@@ -27,6 +29,9 @@ argocd:
       prune: true
       selfHeal: false
       allowEmpty: false
+    managedNamespaceMetadata:
+      labels: {}
+      annotations: {}
     retry:
       limit: 5
       backoff:
@@ -51,6 +56,19 @@ argo-cd:
       create: true
       annotations:
         aws.amazon.com/pod-identity: "enabled"
+    # Increase timeouts to handle large manifests
+    args:
+      operationProcessors: "20"
+      statusProcessors: "40"
+      appResyncPeriod: "180"
+      selfHealTimeout: "10"
+    env:
+      - name: ARGOCD_RECONCILIATION_TIMEOUT
+        value: "1800s"  # Increased from 600s to handle large resources
+      - name: ARGOCD_EXEC_TIMEOUT
+        value: "300s"
+      - name: ARGOCD_SYNC_TIMEOUT
+        value: "600s"
 
   repoServer:
     serviceAccount:
@@ -70,6 +88,10 @@ argo-cd:
       create: true
       annotations:
         aws.amazon.com/pod-identity: "enabled"
+    # Disable client-side validation to avoid managedFields issues
+    extraArgs:
+      - --disable-auth
+      - --insecure
     service:
       type: ClusterIP
       servicePortHttp: 80

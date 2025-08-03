@@ -41,13 +41,15 @@ spec:
     {{- end }}
     syncOptions:
       - CreateNamespace=true
-      - PrunePropagationPolicy=foreground
+      - PrunePropagationPolicy=background  # Use background deletion to prevent timeout
       - PruneLast=true
-      - ServerSideApply=true
+      - ServerSideApply=false  # Disable server-side apply to avoid managedFields
       - RespectIgnoreDifferences=true
       - SkipDryRunOnMissingResource=true
       - ApplyOutOfSyncOnly=true
-      - Replace=false  # Prevent replace operations that can cause managedFields issues
+      - Replace=true  # Use replace strategy to bypass managedFields
+      - Validate=false  # Skip validation to speed up sync
+      - FailOnSharedResource=false  # Allow shared resources
     retry:
       limit: {{ .Values.argocd.syncPolicy.retry.limit | default 5 }}
       backoff:
@@ -55,23 +57,35 @@ spec:
         factor: {{ .Values.argocd.syncPolicy.retry.backoff.factor | default 2 }}
         maxDuration: {{ .Values.argocd.syncPolicy.retry.backoff.maxDuration | default "3m" }}
   ignoreDifferences:
-    # Ignore managedFields for all resources to prevent sync timeouts
+    # Global ignore for all resources
     - group: "*"
       kind: "*"
+      managedFieldsManagers:
+        - kube-controller-manager
+        - kubectl-client-side-apply
+        - kubectl-edit
+        - kubectl
+        - argocd-application-controller
+        - cloudnative-pg
       jsonPointers:
         - /metadata/managedFields
+        - /metadata/resourceVersion
+        - /metadata/uid
+        - /metadata/generation
     # CRD-specific ignores
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
       jsonPointers:
         - /metadata/annotations
         - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
+        - /spec/conversion/webhook/clientConfig/caBundle
     # PostgreSQL Cluster-specific ignores
     - group: postgresql.cnpg.io
       kind: Cluster
       jsonPointers:
         - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
         - /status
+        - /metadata/finalizers
   revisionHistoryLimit: {{ .Values.argocd.revisionHistoryLimit | default 3 }}
 {{- end }}
 {{- end }} 

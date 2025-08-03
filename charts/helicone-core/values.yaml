@@ -390,7 +390,9 @@ externalSecrets:
 #################################################################################
 # Bitnami CloudNativePG Configuration
 #################################################################################
+# Disable the entire cloudnative-pg subchart since we have the operator in cnpg-system
 cloudnative-pg:
+  enabled: false  # Disable the entire subchart
   # Disable operator installation - we already have one in cnpg-system
   operator:
     enabled: false
