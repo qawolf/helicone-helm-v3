@@ -8,18 +8,8 @@ metadata:
     {{- include "helicone.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true,ServerSideApply=true
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true
     argocd.argoproj.io/compare-options: IgnoreExtraneous
-    argocd.argoproj.io/ignore-differences: |
-      jsonPointers:
-      - /metadata/annotations
-      - /metadata/managedFields
-      - /status
-      - /spec/instances
-      - /spec/primaryUpdateStrategy
-      - /spec/primaryUpdateMethod
-    # Skip webhook validation to avoid TLS certificate issues
-    cnpg.io/skipWebhookForceReadiness: "true"
 spec:
   instances: {{ .Values.helicone.cloudnativepg.cluster.instances }}
   
