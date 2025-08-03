@@ -1,4 +1,4 @@
-{{- if false }}
+{{- if .Values.helicone.cloudnativepg.enabled }}
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -8,8 +8,8 @@ metadata:
     {{- include "helicone.labels" . | nindent 4 }}
   annotations:
     helm.sh/resource-policy: keep
-    argocd.argoproj.io/sync-wave: "-2"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true,Replace=true
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true
     argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
   instances: {{ .Values.helicone.cloudnativepg.cluster.instances }}

@@ -29,3 +29,9 @@ maintainers:
 home: https://helicone.ai
 sources:
   - https://github.com/Helicone/helicone
+
+annotations:
+  # Prerequisites: CloudNativePG operator must be installed in the cluster
+  # See CLOUDNATIVEPG_REQUIREMENTS.md for installation instructions
+  "helm.sh/prerequisites": |
+    CloudNativePG operator must be installed before deploying this chart.
