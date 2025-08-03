@@ -96,7 +96,7 @@ argo-cd:
   # Configs
   configs:
     params:
-      server.insecure: true # TODO Set this to false in production
+      server.insecure: false
     
     # RBAC Configuration
     rbac:
