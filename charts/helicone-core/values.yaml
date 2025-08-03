@@ -392,7 +392,8 @@ externalSecrets:
 #################################################################################
 cloudnative-pg:
   # Disable operator installation - we already have one in cnpg-system
-  enabled: false
+  operator:
+    enabled: false
   crds:
     install: false
   # Disable the Barman Cloud plugin to avoid ClusterRole conflicts in ArgoCD
