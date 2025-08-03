@@ -381,7 +381,7 @@ externalSecrets:
   serviceAccount:
     name: "external-secrets-sa"
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::849596434884:role/helicone-external-secrets-role"
+      aws.amazon.com/pod-identity: "enabled"
 
   secretPrefix: "helicone"
 # When externalSecrets.enabled is false, vanilla Kubernetes secrets will be used
