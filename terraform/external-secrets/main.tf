@@ -177,33 +177,20 @@ resource "aws_secretsmanager_secret_version" "external_clickhouse" {
 # IAM Role for External Secrets Operator (Pod Identity)
 #################################################################################
 
-# Trust policy for External Secrets Operator using IRSA
+# Trust policy for External Secrets Operator using Pod Identity
 data "aws_iam_policy_document" "external_secrets_trust" {
   statement {
     effect = "Allow"
 
     principals {
-      type        = "Federated"
-      identifiers = ["arn:aws:iam::${local.account_id}:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D"]
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
     }
 
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D:sub"
-      values   = [
-        "system:serviceaccount:bootstrap:bootstrap-external-secrets",
-        "system:serviceaccount:helicone:external-secrets-sa",
-        "system:serviceaccount:default:external-secrets-sa"
-      ]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D:aud"
-      values   = ["sts.amazonaws.com"]
-    }
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession"
+    ]
   }
 }
 
@@ -211,7 +198,7 @@ data "aws_iam_policy_document" "external_secrets_trust" {
 resource "aws_iam_role" "external_secrets" {
   name               = "${var.resource_prefix}-external-secrets-role"
   assume_role_policy = data.aws_iam_policy_document.external_secrets_trust.json
-  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager via IRSA"
+  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager via Pod Identity"
 
   tags = var.tags
 }
@@ -354,7 +341,7 @@ resource "aws_eks_pod_identity_association" "external_secrets_default" {
 resource "aws_eks_pod_identity_association" "external_secrets_bootstrap" {
   cluster_name    = var.eks_cluster_name
   namespace       = "bootstrap"
-  service_account = "bootstrap-external-secrets"
+  service_account = "external-secrets"
   role_arn        = aws_iam_role.external_secrets.arn
 
   tags = var.tags

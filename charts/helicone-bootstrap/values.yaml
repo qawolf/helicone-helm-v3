@@ -25,7 +25,7 @@ external-secrets:
   installCRDs: true
   serviceAccount:
     create: true
-    name: "bootstrap-external-secrets"
+    name: "external-secrets"  # ESO expects this name by default
     annotations:
       aws.amazon.com/pod-identity: "enabled"
   resources:
