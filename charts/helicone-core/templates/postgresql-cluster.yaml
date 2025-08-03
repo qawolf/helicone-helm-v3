@@ -9,7 +9,7 @@ metadata:
   annotations:
     helm.sh/resource-policy: keep
     argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,RespectIgnoreDifferences=true,ServerSideApply=true
     argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
   instances: {{ .Values.helicone.cloudnativepg.cluster.instances }}
