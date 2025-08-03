@@ -391,8 +391,10 @@ externalSecrets:
 # Bitnami CloudNativePG Configuration
 #################################################################################
 cloudnative-pg:
+  # Disable operator installation - we already have one in cnpg-system
+  enabled: false
   crds:
-    install: true
+    install: false
   # Disable the Barman Cloud plugin to avoid ClusterRole conflicts in ArgoCD
   pluginBarmanCloud:
     enabled: false
