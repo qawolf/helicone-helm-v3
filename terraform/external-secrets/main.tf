@@ -177,28 +177,28 @@ resource "aws_secretsmanager_secret_version" "external_clickhouse" {
 # IAM Role for External Secrets Operator (Pod Identity)
 #################################################################################
 
-# Trust policy for External Secrets Operator using Pod Identity
+# Trust policy for External Secrets Operator using IRSA
 data "aws_iam_policy_document" "external_secrets_trust" {
   statement {
     effect = "Allow"
 
     principals {
-      type        = "Service"
-      identifiers = ["pods.eks.amazonaws.com"]
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::${local.account_id}:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D"]
     }
 
-    actions = ["sts:AssumeRole", "sts:TagSession"]
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [local.account_id]
+      variable = "oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D:sub"
+      values   = ["system:serviceaccount:bootstrap:bootstrap-external-secrets"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "eks:cluster-name"
-      values   = [var.eks_cluster_name]
+      variable = "oidc.eks.us-west-2.amazonaws.com/id/8647A3CACE295070F4AD230B6C79C68D:aud"
+      values   = ["sts.amazonaws.com"]
     }
   }
 }
@@ -207,7 +207,7 @@ data "aws_iam_policy_document" "external_secrets_trust" {
 resource "aws_iam_role" "external_secrets" {
   name               = "${var.resource_prefix}-external-secrets-role"
   assume_role_policy = data.aws_iam_policy_document.external_secrets_trust.json
-  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager via Pod Identity"
+  description        = "IAM role for External Secrets Operator to access AWS Secrets Manager via IRSA"
 
   tags = var.tags
 }
