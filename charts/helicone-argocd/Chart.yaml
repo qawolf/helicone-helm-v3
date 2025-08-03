@@ -3,11 +3,11 @@ name: helicone-argocd
 description: Helicone ArgoCD GitOps Setup
 type: application
 version: 0.1.0
-appVersion: "2.12.0"
+appVersion: "3.0.12"
 
 dependencies:
   - name: argo-cd
-    version: "7.3.11"
+    version: "8.2.5"
     repository: "https://argoproj.github.io/argo-helm"
     condition: argo-cd.enabled
 
