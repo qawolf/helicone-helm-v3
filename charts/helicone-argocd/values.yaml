@@ -42,7 +42,7 @@ argo-cd:
     domain: argocd.helicone.ai
 
   crds:
-    install: true
+    install: false
     keep: true
 
   # Service account configurations for pod identity
