@@ -36,7 +36,7 @@ spec:
     {{- if .Values.argocd.syncPolicy.automated }}
     automated:
       prune: {{ .Values.argocd.syncPolicy.automated.prune | default true }}
-      selfHeal: {{ .Values.argocd.syncPolicy.automated.selfHeal | default true }}
+      selfHeal: {{ .Values.argocd.syncPolicy.automated.selfHeal | default false }}
       allowEmpty: {{ .Values.argocd.syncPolicy.automated.allowEmpty | default false }}
     {{- end }}
     syncOptions:

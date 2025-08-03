@@ -396,8 +396,3 @@ cloudnative-pg:
   # Disable the Barman Cloud plugin to avoid ClusterRole conflicts in ArgoCD
   pluginBarmanCloud:
     enabled: false
-  # Configure the operator to use consistent image registry
-  operator:
-    extraEnvVars:
-      - name: OPERATOR_IMAGE_NAME
-        value: "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1"
