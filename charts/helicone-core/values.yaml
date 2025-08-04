@@ -17,7 +17,7 @@ helicone:
     image:
       repository: helicone/web
       pullPolicy: IfNotPresent
-      tag: "v2025.07.23"
+      tag: "v2025.08.03"
     replicaCount: 1
     service:
       annotations: {}
@@ -77,7 +77,7 @@ helicone:
       image:
         repository: helicone/migrations
         pullPolicy: IfNotPresent
-        tag: "v2025.07.30"
+        tag: "v2025.08.03"
       resources: {}
 
     cloudSqlProxy:
@@ -267,7 +267,7 @@ helicone:
     image:
       repository: helicone/jawn
       pullPolicy: IfNotPresent
-      tag: "v2025.06.05"
+      tag: "v2025.08.03"
     replicaCount: 1
     service:
       annotations: {}
