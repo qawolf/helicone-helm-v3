@@ -1,4 +1,22 @@
 {{- if .Values.helicone.cloudnativepg.enabled }}
+{{- /*
+CloudNativePG PostgreSQL Cluster Configuration
+
+CRITICAL: Image Requirements
+============================
+CloudNativePG REQUIRES specific PostgreSQL images that include the CNPG manager binary.
+Using standard PostgreSQL images (bitnami/postgresql, postgres:latest, etc.) will cause:
+- "Instance is still down, will retry in 1 second" loops
+- "Error while getting streaming replication secret" errors
+- Bootstrap controller failures
+
+ALWAYS use images from: ghcr.io/cloudnative-pg/postgresql
+
+To change PostgreSQL version, update values.yaml:
+  helicone.cloudnativepg.cluster.image.tag
+
+Supported versions: https://github.com/cloudnative-pg/postgres-containers
+*/ -}}
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -15,8 +33,10 @@ metadata:
 spec:
   instances: {{ .Values.helicone.cloudnativepg.cluster.instances }}
   
-  # Use CloudNativePG PostgreSQL image
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.5
+  # PostgreSQL image configuration
+  # IMPORTANT: Must use CloudNativePG-compatible images (ghcr.io/cloudnative-pg/postgresql)
+  # Standard PostgreSQL images will cause the cluster to fail with "Instance is still down" errors
+  imageName: {{ .Values.helicone.cloudnativepg.cluster.image.name }}:{{ .Values.helicone.cloudnativepg.cluster.image.tag }}
   
   postgresql:
     parameters:

@@ -169,6 +169,12 @@ helicone:
     cluster:
       name: helicone-postgres
       instances: 1
+      # IMPORTANT: CloudNativePG requires specific PostgreSQL images that include the CNPG manager
+      # DO NOT use standard PostgreSQL images (e.g., bitnami/postgresql, postgres:latest)
+      # Always use ghcr.io/cloudnative-pg/postgresql images
+      image:
+        name: ghcr.io/cloudnative-pg/postgresql
+        tag: "17.5"  # Use the PostgreSQL version you need
       postgresql:
         parameters:
           max_connections: "200"
