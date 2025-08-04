@@ -288,11 +288,11 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 
 {{- define "helicone.db.connectionString" -}}
 {{- if .Values.helicone.cloudnativepg.enabled }}
-{{- printf "%s:$DB_PASSWORD@%s-rw:$DB_PORT/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
+{{- printf "%s:%s@%s-rw:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.env.dbUser" . | fromYaml).value (include "helicone.env.dbPassword" . | fromYaml).value ( .Values.helicone.cloudnativepg.cluster.name ) (include "helicone.env.dbPort" . | fromYaml).value (include "helicone.env.dbName" . | fromYaml).value }}
 {{- else if .Values.helicone.web.cloudSqlProxy.enabled }}
-{{- printf "$DB_USER:$DB_PASSWORD@localhost:%s/$DB_NAME?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) }}
+{{- printf "%s:%s@localhost:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.env.dbUser" . | fromYaml).value (include "helicone.env.dbPassword" . | fromYaml).value (include "helicone.env.dbPort" . | fromYaml).value (include "helicone.env.dbName" . | fromYaml).value }}
 {{- else }}
-{{- printf "$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" }}
+{{- printf "%s:%s@%s:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.env.dbUser" . | fromYaml).value (include "helicone.env.dbPassword" . | fromYaml).value (include "helicone.env.dbHost" . | fromYaml).value (include "helicone.env.dbPort" . | fromYaml).value (include "helicone.env.dbName" . | fromYaml).value }}
 {{- end }}
 {{- end }}
 
@@ -341,12 +341,20 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 # Supabase environment variables are tech debt as a result of Jawn still having the Supabase database url in the config.
 {{- define "helicone.env.supabaseDatabaseUrl" -}}
 - name: SUPABASE_DATABASE_URL
-  value: "$DATABASE_URL"
+{{- if .Values.helicone.cloudnativepg.enabled }}
+  value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
+{{- else }}
+  value: {{ .Values.helicone.config.databaseUrl | default (printf "postgresql://%s" (include "helicone.db.connectionString" .)) | quote }}
+{{- end }}
 {{- end }}
 
 {{- define "helicone.env.clickhouseHostDocker" -}}
 - name: CLICKHOUSE_HOST_DOCKER
-  value: "$CLICKHOUSE_URL"
+{{- if .Values.helicone.clickhouse.enabled }}
+  value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
+{{- else }}
+  value: {{ .Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided" | quote }}
+{{- end }}
 {{- end }}
 
 {{- define "helicone.env.clickhousePort" -}}
