@@ -547,3 +547,10 @@ Web deployment specific environment variables
 - name: NEXT_PUBLIC_IS_ON_PREM
   value: "true"
 {{- end }}
+
+{{- define "helicone.env.csbApiKey" -}}
+- name: CSB_API_KEY
+  # feature is deprecated, real value not required, remove from Helm
+  # once backend no longer requires for startup
+  value: "csb-.."
+{{- end }}
