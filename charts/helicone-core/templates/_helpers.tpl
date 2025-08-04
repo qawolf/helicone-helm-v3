@@ -288,11 +288,11 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 
 {{- define "helicone.db.connectionString" -}}
 {{- if .Values.helicone.cloudnativepg.enabled }}
-{{- printf "%s:$(DB_PASSWORD)@%s-rw:$(DB_PORT)/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
+{{- printf "%s:$DB_PASSWORD@%s-rw:$DB_PORT/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
 {{- else if .Values.helicone.web.cloudSqlProxy.enabled }}
-{{- printf "$(DB_USER):$(DB_PASSWORD)@localhost:%s/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) }}
+{{- printf "$DB_USER:$DB_PASSWORD@localhost:%s/$DB_NAME?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) }}
 {{- else }}
-{{- printf "$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" }}
+{{- printf "$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" }}
 {{- end }}
 {{- end }}
 
