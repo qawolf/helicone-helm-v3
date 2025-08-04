@@ -339,19 +339,14 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- end }}
 
 # Supabase environment variables are tech debt as a result of Jawn still having the Supabase database url in the config.
-{{- define "helicone.env.supabaseUrl" -}}
-- name: SUPABASE_URL
-  value: "http://$(DB_HOST):$(DB_PORT)"
-{{- end }}
-
 {{- define "helicone.env.supabaseDatabaseUrl" -}}
 - name: SUPABASE_DATABASE_URL
-  value: "$(DATABASE_URL)"
+  value: "$DATABASE_URL"
 {{- end }}
 
 {{- define "helicone.env.clickhouseHostDocker" -}}
 - name: CLICKHOUSE_HOST_DOCKER
-  value: "$(CLICKHOUSE_URL)"
+  value: "$CLICKHOUSE_URL"
 {{- end }}
 
 {{- define "helicone.env.clickhousePort" -}}
