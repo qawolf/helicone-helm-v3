@@ -75,4 +75,10 @@ variable "kubernetes_namespace" {
   description = "Kubernetes namespace where the service accounts will be created"
   type        = string
   default     = "helicone"
+}
+
+variable "rust_gateway_enabled" {
+  description = "Enable Rust gateway pod identity associations"
+  type        = bool
+  default     = false
 } 
