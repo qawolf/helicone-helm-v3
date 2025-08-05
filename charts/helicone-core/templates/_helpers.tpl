@@ -353,6 +353,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
       key: url
   {{- else }}
   value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
+  {{- end }}
 
 - name: DATABASE_URL
   {{- if and (.Values.helicone.config.databaseUrl) (ne .Values.helicone.config.databaseUrl "") }}
@@ -364,7 +365,7 @@ ClickHouse host for Jawn application (URL format for Node.js client)
       key: url
   {{- else }}
   value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
-{{- end }}
+  {{- end }}
 {{- end }}
 
 {{- define "helicone.env.clickhouseHostDocker" -}}
