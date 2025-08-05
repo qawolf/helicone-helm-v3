@@ -302,18 +302,9 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- if .Values.helicone.cloudnativepg.enabled }}
 {{- printf "%s:$(DB_PASSWORD)@%s-rw:$(DB_PORT)/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.owner .Values.helicone.cloudnativepg.cluster.name .Values.helicone.cloudnativepg.cluster.bootstrap.initdb.database }}
 {{- else if .Values.helicone.web.cloudSqlProxy.enabled }}
-{{- printf "$(DB_USER):$(DB_PASSWORD)@localhost:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" (include "helicone.cloudSqlProxy.port" .) .Values.helicone.config.dbName }}
+{{- printf "%s:%s@localhost:%s/%s?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" .Values.helicone.config.dbHost .Values.helicone.config.dbPassword (include "helicone.cloudSqlProxy.port" .) .Values.helicone.config.dbName }}
 {{- else }}
 {{- printf "$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable&options=-c%%20search_path%%3Dpublic,extensions" }}
-{{- end }}
-{{- end }}
-
-{{- define "helicone.env.databaseUrl" -}}
-- name: DATABASE_URL
-{{- if .Values.helicone.cloudnativepg.enabled }}
-  value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
-{{- else }}
-  value: {{ .Values.helicone.config.databaseUrl | default (printf "postgresql://%s" (include "helicone.db.connectionString" .)) | quote }}
 {{- end }}
 {{- end }}
 
@@ -351,14 +342,18 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 {{- end }}
 
 # Supabase environment variables are tech debt as a result of Jawn still having the Supabase database url in the config.
-{{- define "helicone.env.supabaseUrl" -}}
-- name: SUPABASE_URL
-  value: "http://$(DB_HOST):$(DB_PORT)"
-{{- end }}
-
-{{- define "helicone.env.supabaseDatabaseUrl" -}}
+{{- define "helicone.env.databaseUrl" -}}
 - name: SUPABASE_DATABASE_URL
-  value: "$(DATABASE_URL)"
+  {{- if and (.Values.helicone.config.databaseUrl) (ne .Values.helicone.config.databaseUrl "") }}
+  value: {{ .Values.helicone.config.databaseUrl | quote }}
+  {{- else if .Values.externalSecrets.enabled }}
+  valueFrom:
+    secretKeyRef:
+      name: postgres-credentials
+      key: url
+  {{- else }}
+  value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
+{{- end }}
 {{- end }}
 
 {{- define "helicone.env.clickhouseHostDocker" -}}
@@ -557,4 +552,11 @@ Web deployment specific environment variables
 {{- define "helicone.env.nextPublicIsOnPrem" -}}
 - name: NEXT_PUBLIC_IS_ON_PREM
   value: "true"
+{{- end }}
+
+{{- define "helicone.env.csbApiKey" -}}
+- name: CSB_API_KEY
+  # feature is deprecated, real value not required, remove from Helm
+  # once backend no longer requires for startup
+  value: "csb-.."
 {{- end }}
