@@ -66,12 +66,12 @@ meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 */}}
 
 {{/*
-ClickHouse URL eg http://localhost:18123
+ClickHouse URL with scheme and port eg http://localhost:18123
 */}}
-{{- define "helicone.env.clickhouseHost" -}}
+{{- define "helicone.env.clickhouseUrl" -}}
 - name: CLICKHOUSE_HOST
 {{- if .Values.helicone.clickhouse.enabled }}
-  value: {{ printf "http://%s" (include "clickhouse.name" .) | quote }}
+  value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
 {{- else }}
   value: {{ (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided") | quote }}
 {{- end }}
@@ -85,9 +85,7 @@ ClickHouse hostname for migration scripts (just hostname, no protocol/port, eg `
 {{- if .Values.helicone.clickhouse.enabled }}
   value: {{ include "clickhouse.name" . | quote }}
 {{- else }}
-{{- $url := .Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided" }}
-{{- $hostname := $url | replace "https://" "" | replace "http://" "" }}
-  value: {{ $hostname | quote }}
+  value: {{ .Values.helicone.config.externalClickhouseHost | required "When clickhouse.enabled is false, helicone.config.externalClickhouseHost must be provided" }}
 {{- end }}
 {{- end }}
 

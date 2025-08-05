@@ -12,7 +12,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 # TODO Break this down further into smaller templates.
 {{- define "helicone.web.env" -}}
-{{ include "helicone.env.clickhouseHost" . }}
+{{ include "helicone.env.clickhouseUrl" . }}
 {{ include "helicone.env.clickhousePort" . }}
 {{ include "helicone.env.clickhouseUser" . }}
 {{ include "helicone.env.clickhousePassword" . }}
