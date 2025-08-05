@@ -11,7 +11,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{ define "helicone.jawn.env" -}}
-{{- include "helicone.env.clickhouseHostForJawn" . | nindent 12 }}  # TODO This is tech debt that should be removed
+{{- include "helicone.env.clickhouseHost" . | nindent 12 }}
 {{- include "helicone.env.clickhouseUser" . | nindent 12 }}
 {{- include "helicone.env.clickhousePassword" . | nindent 12 }}
 {{- include "helicone.env.dbHost" . | nindent 12 }}

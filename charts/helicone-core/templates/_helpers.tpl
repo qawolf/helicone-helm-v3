@@ -64,10 +64,23 @@ meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 {{/*
   Environment variables and secrets
 */}}
+
 {{/*
-ClickHouse hostname for migration scripts (just hostname, no protocol/port)
+ClickHouse URL eg http://localhost:18123
 */}}
 {{- define "helicone.env.clickhouseHost" -}}
+- name: CLICKHOUSE_HOST
+{{- if .Values.helicone.clickhouse.enabled }}
+  value: {{ printf "http://%s" (include "clickhouse.name" .) | quote }}
+{{- else }}
+  value: {{ (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost | required "When clickhouse.enabled is false, either helicone.config.externalClickhouseUrl or helicone.config.clickhouseHost must be provided") | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+ClickHouse hostname for migration scripts (just hostname, no protocol/port, eg `clickhouse`)
+*/}}
+{{- define "helicone.env.clickhouseHostForMigrations" -}}
 - name: CLICKHOUSE_HOST
 {{- if .Values.helicone.clickhouse.enabled }}
   value: {{ include "clickhouse.name" . | quote }}
@@ -78,39 +91,12 @@ ClickHouse hostname for migration scripts (just hostname, no protocol/port)
 {{- end }}
 {{- end }}
 
-{{/*
-ClickHouse URL for application clients (full URL with protocol and port)
-*/}}
-{{- define "helicone.env.clickhouseUrl" -}}
-- name: CLICKHOUSE_URL
+{{- define "helicone.env.clickhousePort" -}}
+- name: CLICKHOUSE_PORT
 {{- if .Values.helicone.clickhouse.enabled }}
-  value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
+  value: "8123"
 {{- else }}
-  value: {{ printf "%s:%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) (.Values.helicone.config.externalClickhousePort | default "8123") }}
-{{- end }}
-{{- end }}
-
-{{/*
-ClickHouse host for Migrations (with protocol, no port)
-*/}}
-{{- define "helicone.env.clickhouseHostForMigrations" -}}
-- name: CLICKHOUSE_HOST
-{{- if .Values.helicone.clickhouse.enabled }}
-  value: {{ printf "http://%s" (include "clickhouse.name" .) | quote }}
-{{- else }}
-  value: {{ printf "%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) }}
-{{- end }}
-{{- end }}
-
-{{/*
-ClickHouse host for Jawn application (URL format for Node.js client)
-*/}}
-{{- define "helicone.env.clickhouseHostForJawn" -}}
-- name: CLICKHOUSE_HOST
-{{- if .Values.helicone.clickhouse.enabled }}
-  value: {{ printf "http://%s:8123" (include "clickhouse.name" .) | quote }}
-{{- else }}
-  value: {{ printf "%s:%s" (.Values.helicone.config.externalClickhouseUrl | default .Values.helicone.config.clickhouseHost) (.Values.helicone.config.externalClickhousePort | default "8123") }}
+  value: {{ .Values.helicone.config.externalClickhousePort | default .Values.helicone.config.clickhousePort | required "When clickhouse.enabled is false, either helicone.config.externalClickhousePort or helicone.config.clickhousePort must be provided" | quote }}
 {{- end }}
 {{- end }}
 
@@ -358,20 +344,6 @@ ClickHouse host for Jawn application (URL format for Node.js client)
   {{- else }}
   value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
   {{- end }}
-{{- end }}
-
-{{- define "helicone.env.clickhouseHostDocker" -}}
-- name: CLICKHOUSE_HOST_DOCKER
-  value: "$(CLICKHOUSE_URL)"
-{{- end }}
-
-{{- define "helicone.env.clickhousePort" -}}
-- name: CLICKHOUSE_PORT
-{{- if .Values.helicone.clickhouse.enabled }}
-  value: "8123"
-{{- else }}
-  value: {{ .Values.helicone.config.externalClickhousePort | default .Values.helicone.config.clickhousePort | required "When clickhouse.enabled is false, either helicone.config.externalClickhousePort or helicone.config.clickhousePort must be provided" | quote }}
-{{- end }}
 {{- end }}
 
 {{- define "helicone.env.smtpHost" -}}
