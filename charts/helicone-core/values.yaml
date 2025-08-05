@@ -77,7 +77,7 @@ helicone:
       image:
         repository: helicone/migrations
         pullPolicy: IfNotPresent
-        tag: "v2025.08.03"
+        tag: "v2025.08.04"
       resources: {}
 
     cloudSqlProxy:

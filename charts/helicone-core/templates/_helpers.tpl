@@ -353,6 +353,17 @@ ClickHouse host for Jawn application (URL format for Node.js client)
       key: url
   {{- else }}
   value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
+
+- name: DATABASE_URL
+  {{- if and (.Values.helicone.config.databaseUrl) (ne .Values.helicone.config.databaseUrl "") }}
+  value: {{ .Values.helicone.config.databaseUrl | quote }}
+  {{- else if .Values.externalSecrets.enabled }}
+  valueFrom:
+    secretKeyRef:
+      name: postgres-credentials
+      key: url
+  {{- else }}
+  value: {{ printf "postgresql://%s" (include "helicone.db.connectionString" .) | quote }}
 {{- end }}
 {{- end }}
 
