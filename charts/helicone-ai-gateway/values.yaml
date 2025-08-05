@@ -1,6 +1,6 @@
 helicone:
   aiGateway:
-    enabled: true
+    enabled: false
     image:
       repository: helicone/ai-gateway
       pullPolicy: IfNotPresent
@@ -101,7 +101,7 @@ helicone:
           load-balance:
             chat:
               strategy: latency
-              targets:
+              providers:
                 - openai
                 - anthropic
       providers:
