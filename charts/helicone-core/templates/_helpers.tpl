@@ -154,37 +154,29 @@ ClickHouse host for Jawn application (URL format for Node.js client)
 */}}
 # TODO This conditional logic will incur tech debt which needs to be refactored.
 {{- define "helicone.env.s3AccessKey" -}}
-{{- if not (and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled) }}
 - name: S3_ACCESS_KEY
-{{- if .Values.helicone.minio.enabled }}
   valueFrom:
     secretKeyRef:
+      {{- if .Values.helicone.minio.enabled }}
       name: {{ .Values.helicone.config.minioSecretsName | default "helicone-minio-secrets" | quote }}
       key: {{ .Values.helicone.config.minioAccessKeyKey | default "root_user" | quote }}
-{{- else }}
-  valueFrom:
-    secretKeyRef:
+      {{- else }}
       name: {{ .Values.helicone.config.s3SecretsName | default "helicone-secrets" | quote }}
       key: {{ .Values.helicone.config.s3AccessKeyKey | default "access_key" | quote }}
-{{- end }}
-{{- end }}
+      {{- end }}
 {{- end }}
 
 {{- define "helicone.env.s3SecretKey" -}}
-{{- if not (and .Values.helicone.s3 .Values.helicone.s3.serviceAccount .Values.helicone.s3.serviceAccount.enabled) }}
 - name: S3_SECRET_KEY
-{{- if .Values.helicone.minio.enabled }}
   valueFrom:
     secretKeyRef:
+      {{- if .Values.helicone.minio.enabled }}
       name: {{ .Values.helicone.config.minioSecretsName | default "helicone-minio-secrets" | quote }}
       key: {{ .Values.helicone.config.minioSecretKeyKey | default "root_password" | quote }}
-{{- else }}
-  valueFrom:
-    secretKeyRef:
+      {{- else }}
       name: {{ .Values.helicone.config.s3SecretsName | default "helicone-secrets" | quote }}
       key: {{ .Values.helicone.config.s3SecretKeyKey | default "secret_key" | quote }}
-{{- end }}
-{{- end }}
+      {{- end }}
 {{- end }}
 
 {{- define "helicone.env.s3Endpoint" -}}
