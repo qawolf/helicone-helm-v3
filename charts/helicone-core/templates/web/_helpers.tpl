@@ -13,6 +13,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 # TODO Break this down further into smaller templates.
 {{- define "helicone.web.env" -}}
 {{ include "helicone.env.clickhouseHost" . }}
+{{ include "helicone.env.clickhousePort" . }}
 {{ include "helicone.env.clickhouseUser" . }}
 {{ include "helicone.env.clickhousePassword" . }}
 {{ include "helicone.env.dbHost" . }}
@@ -39,7 +40,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ include "helicone.env.enableCronJob" . }}
 {{ include "helicone.env.env" . }}
 {{ include "helicone.env.nextPublicBetterAuth" . }}
-{{ include "helicone.env.clickhousePort" . }}
 {{ include "helicone.env.smtpHost" . }}
 {{ include "helicone.env.smtpPort" . }}
 {{ include "helicone.env.smtpSecure" . }}

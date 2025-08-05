@@ -12,6 +12,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{ define "helicone.jawn.env" -}}
 {{- include "helicone.env.clickhouseHost" . | nindent 12 }}
+{{- include "helicone.env.clickhousePort" . | nindent 12 }}
 {{- include "helicone.env.clickhouseUser" . | nindent 12 }}
 {{- include "helicone.env.clickhousePassword" . | nindent 12 }}
 {{- include "helicone.env.dbHost" . | nindent 12 }}
