@@ -186,7 +186,7 @@ resource "aws_eks_pod_identity_association" "helicone_core_jawn" {
 
 # Pod Identity Association for helicone-ai-gateway
 resource "aws_eks_pod_identity_association" "helicone_ai_gateway" {
-  count = var.enable_service_account_access ? 1 : 0
+  count = var.enable_service_account_access && var.rust_gateway_enabled ? 1 : 0
 
   cluster_name    = var.eks_cluster_name
   namespace       = var.kubernetes_namespace
@@ -198,7 +198,7 @@ resource "aws_eks_pod_identity_association" "helicone_ai_gateway" {
 
 # Pod Identity Association for helicone-us-east-1-ai-gateway-sa
 resource "aws_eks_pod_identity_association" "helicone_us_east_1_ai_gateway" {
-  count = var.enable_service_account_access ? 1 : 0
+  count = var.enable_service_account_access && var.rust_gateway_enabled ? 1 : 0
 
   cluster_name    = var.eks_cluster_name
   namespace       = var.kubernetes_namespace

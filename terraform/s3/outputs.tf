@@ -30,10 +30,14 @@ output "s3_service_account_role_arn" {
 
 output "pod_identity_associations" {
   description = "Map of Pod Identity Association IDs"
-  value = var.enable_service_account_access ? {
-    helicone_core_web           = aws_eks_pod_identity_association.helicone_core_web[0].association_id
-    helicone_core_jawn          = aws_eks_pod_identity_association.helicone_core_jawn[0].association_id  
-    helicone_ai_gateway         = aws_eks_pod_identity_association.helicone_ai_gateway[0].association_id
-    helicone_us_east_1_ai_gateway = aws_eks_pod_identity_association.helicone_us_east_1_ai_gateway[0].association_id
-  } : null
+  value = var.enable_service_account_access ? merge(
+    {
+      helicone_core_web  = aws_eks_pod_identity_association.helicone_core_web[0].association_id
+      helicone_core_jawn = aws_eks_pod_identity_association.helicone_core_jawn[0].association_id
+    },
+    var.rust_gateway_enabled ? {
+      helicone_ai_gateway            = aws_eks_pod_identity_association.helicone_ai_gateway[0].association_id
+      helicone_us_east_1_ai_gateway = aws_eks_pod_identity_association.helicone_us_east_1_ai_gateway[0].association_id
+    } : {}
+  ) : null
 } 
