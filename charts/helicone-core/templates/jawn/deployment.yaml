@@ -114,7 +114,7 @@ spec:
             - -c
             - |
               echo "Waiting for ClickHouse to be ready..."
-              until curl -sSf {{ .Values.helicone.config.clickhouseUrl }}/ping; do
+              until curl -sSf http://{{ include "clickhouse.name" . }}:8123/ping; do
                 echo "ClickHouse is not ready yet. Waiting..."
                 sleep 2
               done
